@@ -1,0 +1,17 @@
+<tryton>
+    <data>
+        <record model="ir.action.report" id="report_sequence">
+            <field name="name">Jasper Report</field>
+            <field name="model">ir.sequence</field>
+            <field name="report_name">jasper_reports.sequence</field>
+            <field name="report">jasper_reports/sequence.jrxml</field>
+            <field name="extension">pdf</field>
+        </record>
+
+        <record model="ir.action.keyword" id="report_sequence_keyword">
+            <field name="keyword">form_print</field>
+            <field name="model">ir.sequence,-1</field>
+            <field name="action" ref="report_sequence"/>
+        </record>
+    </data>
+</tryton>
