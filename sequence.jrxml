@@ -25,7 +25,7 @@
 				<textElement textAlignment="Center">
 					<font size="14" isBold="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["List of all sequences"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[tr("ca_ES","List of all sequences")]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>

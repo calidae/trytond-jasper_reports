@@ -2,6 +2,7 @@ from trytond.report import Report
 from trytond.config import CONFIG
 from trytond.pool import Pool
 from trytond.transaction import Transaction
+from trytond.cache import Cache
 
 import JasperReports
 
@@ -21,6 +22,18 @@ CONFIG['jasperunlink'] = CONFIG.get('jasperunlink', True)
 
 
 class JasperReport(Report):
+    @Cache('jasper_report.report_file', timeout=0)
+    def get_report_file(self, report):
+        report_content = str(report.report_content)
+
+        if not report_content:
+            raise Exception('Error', 'Missing report file!')
+
+        # TODO Use report.template_extension instead of hardcoded 'jrxml'
+        fd, path = tempfile.mkstemp(suffix=(os.extsep + 'jrxml'), 
+                prefix='trytond_')
+        return path
+
     def execute(self, ids, datas):
         report_path = 'sequence.jrxml'
         report_path = os.path.join(self.addonsPath(), report_path)
@@ -173,4 +186,5 @@ class JasperReport(Report):
 
     def addonsPath(self):
         return os.path.dirname( self.path() )
+
 
