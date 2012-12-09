@@ -12,6 +12,7 @@ import net.sf.jasperreports.engine.design.JRDesignExpression;
 import net.sf.jasperreports.engine.JRExpressionChunk;
 import net.sf.jasperreports.engine.design.JRDesignExpressionChunk;
 import net.sf.jasperreports.engine.JRReport;
+import net.sf.jasperreports.engine.JasperReportsContext;
 
 import java.util.List;
 
@@ -131,6 +132,10 @@ public class I18nGroovyCompiler extends JRGroovyCompiler {
 		super();
 	}
 
+	public I18nGroovyCompiler(JasperReportsContext context) {
+		super(context);
+	}
+
 	protected JRCompilationSourceCode generateSourceCode(JRSourceCompileTask sourceTask) throws JRException {
 		JRCompilationSourceCode superCode = super.generateSourceCode(sourceTask);
 		String code = superCode.getCode();
@@ -154,7 +159,9 @@ public class I18nGroovyCompiler extends JRGroovyCompiler {
 			i++;
 
 			ee = new JRDesignExpression();
-			ee.setValueClass( e.getValueClass() );
+            if (e.getValueClass() == null)
+                continue;
+			ee.setValueClass(e.getValueClass());
 			ee.setValueClassName( e.getValueClassName() );
 			ee.setText( e.getText().replaceAll( "_\\(", "a(" ) );
 			ee.setId( e.getId() );
