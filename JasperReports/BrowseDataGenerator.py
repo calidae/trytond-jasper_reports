@@ -38,7 +38,7 @@ import codecs
 from JasperReport import *
 from AbstractDataGenerator import *
 
-from trytond.model import BrowseRecord, BrowseRecordList
+from trytond.model import Model
 from trytond.pool import Pool
 from trytond.transaction import Transaction
 
@@ -87,24 +87,23 @@ class BrowseDataGenerator(AbstractDataGenerator):
             else:
                 currentPath = root
             if root == 'Attachments':
-                ids = pool.get('ir.attachment').search([
+                value = pool.get('ir.attachment').search([
                         ('res_model','=',record._model_name),
                         ('res_id','=',record.id)
                         ])
-                value = pool.get('ir.attachment').browse(ids)
             elif root == 'User':
                 value = pool.get('res.user').browse([Transaction().user])
             else:
                 if root == 'id':
                     value = record._id
-                elif record.__hasattr__(root):
-                    value = record.__getattr__(root)
+                elif hasattr(record, root):
+                    value = getattr(record, root)
                 else:
                     self.warning("Field '%s' does not exist in model '%s'." % 
-                            (root, record._model._name))
+                            (root, record.__name__))
                     continue
 
-                if isinstance(value, BrowseRecord):
+                if isinstance(value, Model):
                     relations2 = [f.partition('/')[2] for f in relations if 
                             f.partition('/')[0] == root and f.partition('/')[2]]
                     return self.generateIds(value, relations2, currentPath, 
@@ -155,9 +154,9 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
                     'root': record
                     }])
             copies = 1
-            if self.report.copiesField() and record.__hasattr__(
+            if self.report.copiesField() and hasattr(record, 
                     self.report.copiesField()):
-                copies = int(record.__getattr__(self.report.copiesField()))
+                copies = int(getattr(record, self.report.copiesField()))
             for new in newRecords:
                 for x in xrange(copies):
                     self.allRecords.append(new)
@@ -198,9 +197,9 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
             else:
                 currentPath = root
             if root == 'Attachments':
-                ids = pool.get('ir.attachment').search([
-                        ('res_model','=',record._model_name),
-                        ('res_id','=',record.id)
+                value = pool.get('ir.attachment').search([
+                        ('res_model', '=', record.__name__),
+                        ('res_id', '=', record.id)
                         ])
                 value = pool.get('ir.attachment').browse(ids)
             elif root == 'User':
@@ -208,8 +207,8 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
             else:
                 if root == 'id':
                     value = record._id
-                elif record.__hasattr__(root):
-                    value = record.__getattr__(root)
+                elif hasattr(record, root):
+                    value = getattr(record, root)
                 else:
                     value = None
                     self.warning("Field '%s' (path: %s) does not exist in "
@@ -217,7 +216,7 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
                             record._model_name))
 
             # Check if it's a many2one
-            if isinstance(value, BrowseRecord):
+            if isinstance(value, Model):
                 fields2 = [f.partition('/')[2] for f in fields if 
                         f.partition('/')[0] == root ]
                 self.generateCsvRecord(value, records, row, currentPath, 
@@ -225,7 +224,7 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
                 continue
 
             # Check if it's a one2many or many2many
-            if isinstance(value, BrowseRecordList):
+            if isinstance(value, list):
                 if not value:
                     continue
                 fields2 = [f.partition('/')[2] for f in fields 
@@ -253,16 +252,17 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
             # Show all translations for a field
             type = self.report.fields()[currentPath]['type']
             if type == 'java.lang.Object':
-                value = self.valueInAllLanguages(record._model, record.id, root)
+                value = self.valueInAllLanguages(record, record.id, root)
 
-            if field in record._model._columns:
-                field_type = record._model._columns[field]._type
-            elif field in record._model._inherit_fields:
-                field_type = record._model._inherit_fields[field][2]._type
+            if field in record._fields:
+                field_type = record._fields[field]._type
+            elif field in record._inherit_fields:
+                field_type = record._inherit_fields[field][2]._type
 
             # The rest of field types must be converted into str
             if field == 'id':
-                # Check for field 'id' because we can't find it's type in _columns
+                # Check for field 'id' because we can't find it's 
+                # type in _fields
                 value = str(value)
             elif value in (False,None):
                 value = ''
