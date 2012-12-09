@@ -28,7 +28,7 @@ class JasperReport(Report):
 
     @classmethod
     def get_report_file(cls, report):
-        path = cls._get_report_file_cache.get(report)
+        path = cls._get_report_file_cache.get(report.name)
         if path is not None:
             return path
         report_content = str(report.report_content)
@@ -39,31 +39,27 @@ class JasperReport(Report):
         # TODO Use report.template_extension instead of hardcoded 'jrxml'
         fd, path = tempfile.mkstemp(suffix=(os.extsep + 'jrxml'), 
                 prefix='trytond_')
-        cls._get_report_file_cache.set(report, path)
+        os.write(fd, report_content)
+        os.close(fd)
+        cls._get_report_file_cache.set(report.name, path)
         return path
 
     @classmethod
     def execute(cls, ids, data):
         pool = Pool()
         ActionReport = pool.get('ir.action.report')
-
-        report_path = 'sequence.jrxml'
-        report_path = os.path.join(cls.addonsPath(), report_path)
-
-        report_path = '/home/albert/d/tryton/master/server/jasper-reports/trytond/modules/jasper_reports/sequence.jrxml'
-        print "REP: ", report_path
-
-        report = JasperReports.JasperReport(report_path)
         logger = logging.getLogger('jasper_reports')
 
-        action_reports = ActionReport.search([
+        report_actions = ActionReport.search([
                 ('report_name', '=', cls.__name__)
                 ])
-        if not action_reports:
+        if not report_actions:
             raise Exception('Error', 'Report (%s) not find!' % cls.__name__)
-        action_report = action_reports[0]
-        model = action_report.model
-        output_format = action_report.extension
+        report_action = report_actions[0]
+        report_path = cls.get_report_file(report_action)
+        report = JasperReports.JasperReport(report_path)
+        model = report_action.model
+        output_format = report_action.extension
 
         # Create temporary input (CSV) and output (PDF) files 
         temporary_files = []
@@ -168,10 +164,10 @@ class JasperReport(Report):
 
         if Transaction().context.get('return_pages'):
             return (output_format, buffer(file_data), 
-                action_report.direct_print, action_report.name, pages)
+                report_action.direct_print, report_action.name, pages)
 
-        return (output_format, buffer(file_data), action_report.direct_print,
-            action_report.name)
+        return (output_format, buffer(file_data), report_action.direct_print,
+            report_action.name)
 
     @classmethod
     def dsn(cls):

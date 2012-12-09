@@ -1,6 +1,7 @@
 ##############################################################################
 #
-# Copyright (c) 2009 Albert Cervera i Areny <albert@nan-tic.com>
+# Copyright (c) 2009-2012 NaN Projectes de Programari Lliure, S.L.
+#                         http://www.NaN-tic.com
 #
 # WARNING: This program as such is intended to be used by professional
 # programmers who take the whole responsability of assessing all potential
@@ -119,8 +120,7 @@ class JasperReport:
 	
 	def extractProperties(self):
 		# The function will read all relevant information from the jrxml file
-			
-		doc = etree.parse( self._reportPath )
+		doc = etree.parse(self._reportPath)
 
 		# Define namespaces
 		ns = 'http://jasperreports.sourceforge.net/jasperreports'

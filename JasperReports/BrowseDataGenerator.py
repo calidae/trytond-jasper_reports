@@ -29,7 +29,6 @@
 import os
 import csv
 import copy
-import base64
 from xml.dom.minidom import getDOMImplementation
 import xml.dom.minidom
 import tempfile 
@@ -66,12 +65,10 @@ class BrowseDataGenerator(AbstractDataGenerator):
         return self._languages
 
     def valueInAllLanguages(self, model, id, field):
-        context = copy.copy(self.context)
         values = {}
         for language in self.languages():
             with Transaction().set_context(language=(language or 'en_US')):
-                values[language] = model.read(id, [field], 
-                        context=context)[field] or ''
+                values[language] = model.read([id], [field])[0][field] or ''
         result = []
         for key, value in values.iteritems():
             result.append('%s~%s' % (key, value))
@@ -88,14 +85,14 @@ class BrowseDataGenerator(AbstractDataGenerator):
                 currentPath = root
             if root == 'Attachments':
                 value = pool.get('ir.attachment').search([
-                        ('res_model','=',record._model_name),
-                        ('res_id','=',record.id)
+                        ('res_model', '=', record.__name__),
+                        ('res_id', '=', record.id)
                         ])
             elif root == 'User':
                 value = pool.get('res.user').browse([Transaction().user])
             else:
                 if root == 'id':
-                    value = record._id
+                    value = record.id
                 elif hasattr(record, root):
                     value = getattr(record, root)
                 else:
@@ -109,7 +106,7 @@ class BrowseDataGenerator(AbstractDataGenerator):
                     return self.generateIds(value, relations2, currentPath, 
                             currentRecords)
 
-                if not isinstance(value, list):
+                if not isinstance(value, (list, tuple)):
                     self.warning("Field '%s' in model '%s' is not a relation." 
                             % (root, self.model))
                     return currentRecords
@@ -206,14 +203,14 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
                 value = pool.get('res.user').browse(Transaction().user)
             else:
                 if root == 'id':
-                    value = record._id
+                    value = record.id
                 elif hasattr(record, root):
                     value = getattr(record, root)
                 else:
                     value = None
                     self.warning("Field '%s' (path: %s) does not exist in "
                             "model '%s'." % (root, currentPath, 
-                            record._model_name))
+                            record.__name__))
 
             # Check if it's a many2one
             if isinstance(value, Model):
@@ -224,7 +221,7 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
                 continue
 
             # Check if it's a one2many or many2many
-            if isinstance(value, list):
+            if isinstance(value, (list, tuple)):
                 if not value:
                     continue
                 fields2 = [f.partition('/')[2] for f in fields 
@@ -275,7 +272,7 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
                 else:
                     fd, fileName = tempfile.mkstemp()
                     try:
-                        os.write(fd, base64.decodestring(value))
+                        os.write(fd, value)
                     finally:
                         os.close(fd)
                     self.temporary_files.append(fileName)
