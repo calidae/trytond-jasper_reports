@@ -285,7 +285,10 @@ class JasperReport:
 				pathPrefix = pathPrefixTags[0].get('value')
 
 			# We need to find the appropriate subDataset definition for this dataset run.
-			subDataset = doc.xpath( '//jr:subDataset[@name="%s"]' % subDatasetName, namespaces=nss )[0]
+			subDatasets = doc.xpath( '//jr:subDataset[@name="%s"]' % subDatasetName, namespaces=nss )
+			if not subDatasets:
+				continue
+			subDataset = subDatasets[0]
 			fieldTags = subDataset.xpath( 'jr:field', namespaces=nss )
 			fields, fieldNames = self.extractFields( fieldTags, ns )
 
