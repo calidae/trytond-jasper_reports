@@ -136,7 +136,7 @@ class JasperReport:
 				self._language = langTags[0].get('language').lower()
 		
 		# Relations
-		relationTags = doc.xpath( '/jr:jasperReport/jr:property[@name="OPENERP_RELATIONS"]', namespaces=nss )
+		relationTags = doc.xpath( '/jr:jasperReport/jr:property[@name="TRYTON_RELATIONS"]', namespaces=nss )
 		if relationTags and 'value' in relationTags[0].keys():
 			relation = relationTags[0].get('value').strip()
 			if relation.startswith('['):
@@ -148,12 +148,12 @@ class JasperReport:
 			self._relations = [self._pathPrefix[:-1]]
 
 		# Repeat field
-		copiesFieldTags = doc.xpath( '/jr:jasperReport/jr:property[@name="OPENERP_COPIES_FIELD"]', namespaces=nss )
+		copiesFieldTags = doc.xpath( '/jr:jasperReport/jr:property[@name="TRYTON_COPIES_FIELD"]', namespaces=nss )
 		if copiesFieldTags and 'value' in copiesFieldTags[0].keys():
 			self._copiesField = self._pathPrefix + copiesFieldTags[0].get('value')
 
 		self._isHeader = False
-		headerTags = doc.xpath( '/jr:jasperReport/jr:property[@name="OPENERP_HEADER"]', namespaces=nss )
+		headerTags = doc.xpath( '/jr:jasperReport/jr:property[@name="TRYTON_HEADER"]', namespaces=nss )
 		if headerTags and 'value' in headerTags[0].keys():
 			self._isHeader = True
 
@@ -196,17 +196,17 @@ class JasperReport:
 
 			# Model
 			model = ''
-			modelTags = tag.xpath( '//jr:reportElement/jr:property[@name="OPENERP_MODEL"]', namespaces=nss )
+			modelTags = tag.xpath( '//jr:reportElement/jr:property[@name="TRYTON_MODEL"]', namespaces=nss )
 			if modelTags and 'value' in modelTags[0].keys():
 				model = modelTags[0].get('value')
 			
 			pathPrefix = ''
-			pathPrefixTags = tag.xpath( '//jr:reportElement/jr:property[@name="OPENERP_PATH_PREFIX"]', namespaces=nss )
+			pathPrefixTags = tag.xpath( '//jr:reportElement/jr:property[@name="TRYTON_PATH_PREFIX"]', namespaces=nss )
 			if pathPrefixTags and 'value' in pathPrefixTags[0].keys():
 				pathPrefix = pathPrefixTags[0].get('value')
 
 			isHeader = False
-			headerTags = tag.xpath( '//jr:reportElement/jr:property[@name="OPENERP_HEADER"]', namespaces=nss )
+			headerTags = tag.xpath( '//jr:reportElement/jr:property[@name="TRYTON_HEADER"]', namespaces=nss )
 			if headerTags and 'value' in headerTags[0].keys():
 				isHeader = True
 
@@ -256,7 +256,7 @@ class JasperReport:
 
 			# Relations
 			relations = []
-			relationTags = tag.xpath( '../../jr:reportElement/jr:property[@name="OPENERP_RELATIONS"]', namespaces=nss )
+			relationTags = tag.xpath( '../../jr:reportElement/jr:property[@name="TRYTON_RELATIONS"]', namespaces=nss )
 			if relationTags and 'value' in relationTags[0].keys():
 				relation = relationTags[0].get('value').strip()
 				if relation.startswith('['):
@@ -269,18 +269,18 @@ class JasperReport:
 
 			# Repeat field
 			copiesField = None
-			copiesFieldTags = tag.xpath( '../../jr:reportElement/jr:property[@name="OPENERP_COPIES_FIELD"]', namespaces=nss )
+			copiesFieldTags = tag.xpath( '../../jr:reportElement/jr:property[@name="TRYTON_COPIES_FIELD"]', namespaces=nss )
 			if copiesFieldTags and 'value' in copiesFieldTags[0].keys():
 				copiesField = self._pathPrefix + copiesFieldTags[0].get('value')
 
 			# Model
 			model = ''
-			modelTags = tag.xpath( '../../jr:reportElement/jr:property[@name="OPENERP_MODEL"]', namespaces=nss )
+			modelTags = tag.xpath( '../../jr:reportElement/jr:property[@name="TRYTON_MODEL"]', namespaces=nss )
 			if modelTags and 'value' in modelTags[0].keys():
 				model = modelTags[0].get('value')
 			
 			pathPrefix = ''
-			pathPrefixTags = tag.xpath( '../../jr:reportElement/jr:property[@name="OPENERP_PATH_PREFIX"]', namespaces=nss )
+			pathPrefixTags = tag.xpath( '../../jr:reportElement/jr:property[@name="TRYTON_PATH_PREFIX"]', namespaces=nss )
 			if pathPrefixTags and 'value' in pathPrefixTags[0].keys():
 				pathPrefix = pathPrefixTags[0].get('value')
 
