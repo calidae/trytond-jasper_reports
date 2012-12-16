@@ -3,9 +3,17 @@
 
 from trytond.pool import Pool
 from .sequence import *
+from .translation import *
 
 
 def register():
+    Pool.register(
+        Translation,
+        module='jasper_reports', type_='model')
+    Pool.register(
+        ReportTranslationSet,
+        TranslationUpdate,
+        module='jasper_reports', type_='wizard')
     Pool.register(
         SequenceReport,
         module='jasper_reports', type_='report')

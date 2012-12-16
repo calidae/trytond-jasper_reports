@@ -1,5 +1,10 @@
 #This file is part of Tryton.  The COPYRIGHT file at the top level of
 #this repository contains the full copyright notices and license terms.
+import os
+import time
+import tempfile
+import logging
+
 from trytond.report import Report
 from trytond.config import CONFIG
 from trytond.pool import Pool
@@ -7,11 +12,6 @@ from trytond.transaction import Transaction
 from trytond.cache import Cache
 
 import JasperReports
-
-import os
-import time
-import tempfile
-import logging
 
 # Determines the port where the JasperServer process should listen with its XML-RPC server for incomming calls
 CONFIG['jasperport'] = CONFIG.get('jasperport', 8090)
@@ -27,6 +27,21 @@ class JasperReport(Report):
     _get_report_file_cache = Cache('jasper_report.report_file')
 
     @classmethod
+    def write_properties(cls, filename, properties):
+        text = u''
+        for key, value in properties.iteritems():
+            key = key.replace(':', '\\:').replace(' ', '\\ ')
+            value = value.replace(':', '\\:').replace(' ', '\\ ')
+            text += u'%s=%s\n' % (key, value)
+        import codecs
+        f = codecs.open(filename, 'w', 'utf-8')
+        #f = open(filename, 'w')
+        try:
+            f.write(text)
+        finally:
+            f.close()
+
+    @classmethod
     def get_report_file(cls, report):
         path = cls._get_report_file_cache.get(report.name)
         if path is not None:
@@ -36,13 +51,41 @@ class JasperReport(Report):
         if not report_content:
             raise Exception('Error', 'Missing report file!')
 
-        # TODO Use report.template_extension instead of hardcoded 'jrxml'
-        fd, path = tempfile.mkstemp(suffix=(os.extsep + 'jrxml'), 
-                prefix='trytond_')
-        os.write(fd, report_content)
-        os.close(fd)
-        cls._get_report_file_cache.set(report.name, path)
-        return path
+        path = tempfile.mkdtemp(prefix='trytond-jasper-')
+        fname = os.path.split(report.report)[-1]
+        basename = fname.split('.')[0]
+        jrxml_path = os.path.join(path, fname)
+        f = open(jrxml_path, 'w')
+        try:
+            f.write(report_content)
+        finally:
+            f.close()
+
+        Translation = Pool().get('ir.translation')
+        translations = Translation.search([
+                ('type', '=', 'jasper'),
+                ('name', '=', report.report_name),
+                ], order=[
+                ('lang', 'ASC'),
+                ])
+        lang = None
+        p = {}
+        for translation in translations:
+            if lang != translation.lang:
+                if lang:
+                    pfile = os.path.join(path, '%s_%s.properties' % (
+                            basename, lang))
+                    cls.write_properties(pfile, p)
+                    #p.store(open(pfile, 'w'))
+                lang = translation.lang
+            if translation.src is None or translation.value is None:
+                continue
+            p[translation.src] = translation.value
+        if lang:
+            pfile = os.path.join(path, '%s_%s.properties' % (basename, lang))
+            cls.write_properties(pfile, p)
+        cls._get_report_file_cache.set(report.name, jrxml_path)
+        return jrxml_path
 
     @classmethod
     def execute(cls, ids, data):
