@@ -1,0 +1,43 @@
+# 
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
+msgctxt "model:ir.action,name:report_sequence"
+msgid "Jasper Report"
+msgstr "Jasper Report"
+
+msgctxt "selection:ir.translation,type:"
+msgid "Jasper Report"
+msgstr "Jasper Report"
+
+msgctxt "wizard_button:ir.translation.clean,start,clean:"
+msgid "Clean"
+msgstr "Neteja"
+
+msgctxt "wizard_button:ir.translation.clean,start,end:"
+msgid "Cancel"
+msgstr "Cancel·la"
+
+msgctxt "wizard_button:ir.translation.clean,succeed,end:"
+msgid "Ok"
+msgstr "Accepta"
+
+msgctxt "wizard_button:ir.translation.set_report,start,end:"
+msgid "Cancel"
+msgstr "Cancel·la"
+
+msgctxt "wizard_button:ir.translation.set_report,start,set_report:"
+msgid "Start Update"
+msgstr "Inicia actualització"
+
+msgctxt "wizard_button:ir.translation.set_report,succeed,end:"
+msgid "Ok"
+msgstr "Accepta"
+
+msgctxt "wizard_button:ir.translation.update,start,end:"
+msgid "Cancel"
+msgstr "Cancel·la"
+
+msgctxt "wizard_button:ir.translation.update,start,update:"
+msgid "Update"
+msgstr "Actualitza"
