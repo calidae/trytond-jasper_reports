@@ -14,7 +14,7 @@ from trytond.transaction import Transaction
 from trytond.pool import Pool
 from trytond.tools import file_open
 
-__all__ = ['Translation', 'ReportTranslationSet', 'TranslationUpdate']
+__all__ = ['Translation', 'ReportTranslationSet', 'TranslationUpdate', 'TranslationClean']
 
 
 class Translation(ModelSQL, ModelView):
@@ -264,3 +264,17 @@ class TranslationUpdate(Wizard):
                     'module': row['module'],
                     })
         return super(TranslationUpdate, self).do_update(action)
+
+class TranslationClean(Wizard):
+    "Clean translation"
+    __name__ = 'ir.translation.clean'
+
+    @staticmethod
+    def _clean_jasper(translation):
+        pool = Pool()
+        Report = pool.get('ir.action.report')
+        with Transaction().set_context(active_test=False):
+            if not Report.search([
+                        ('report_name', '=', translation.name),
+                        ]):
+                return True

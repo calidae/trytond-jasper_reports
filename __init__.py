@@ -14,6 +14,7 @@ def register():
     Pool.register(
         ReportTranslationSet,
         TranslationUpdate,
+        TranslationClean,
         module='jasper_reports', type_='wizard')
     Pool.register(
         SequenceReport,
