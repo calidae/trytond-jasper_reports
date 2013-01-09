@@ -29,13 +29,6 @@ documentation:
 To use without installation, extract the archive into ``trytond/modules`` with
 the directory name jasper_reports.
 
-Configuration
--------------
-
-Edit your Tryton server configuration file (trytond.conf) and activate the xml-rpc protocol:
-
- * xmlrpc = *:8069
-
 Extra configuration (optional)
 ------------------------------
 
