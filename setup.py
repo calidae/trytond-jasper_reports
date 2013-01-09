@@ -1,11 +1,19 @@
 #!/usr/bin/env python
-#This file is part of Tryton.  The COPYRIGHT file at the top level of
-#this repository contains the full copyright notices and license terms.
+#This file is part jasper_reports module for Tryton.
+#The COPYRIGHT file at the top level of this repository contains
+#the full copyright notices and license terms.
 
 from setuptools import setup
 import re
+import os
+import ConfigParser
 
-info = eval(open('__tryton__.py').read())
+config = ConfigParser.ConfigParser()
+config.readfp(open('tryton.cfg'))
+info = dict(config.items('tryton'))
+for key in ('depends', 'extras_depend', 'xml'):
+    if key in info:
+        info[key] = info[key].strip().splitlines()
 major_version, minor_version, _ = info.get('version', '0.0.1').split('.', 2)
 major_version = int(major_version)
 minor_version = int(minor_version)
@@ -19,14 +27,13 @@ for dep in info.get('depends', []):
 requires.append('trytond >= %s.%s, < %s.%s' %
         (major_version, minor_version, major_version, minor_version + 1))
 
-setup(name='trytond_jasper_reports',
+setup(name='trytonnan_jasper_reports',
     version=info.get('version', '0.0.1'),
-    description=info.get('description', ''),
-    author=info.get('author', ''),
-    author_email=info.get('email', ''),
-    url=info.get('website', ''),
-    download_url="http://downloads.tryton.org/" + \
-            info.get('version', '0.0.1').rsplit('.', 1)[0] + '/',
+    description='Jasper Reports',
+    author='NaN·tic',
+    author_email='info@NaN-tic.com',
+    url='http://www.nan-tic.com',
+    download_url="https://bitbucket.org/albertnan/jasper_reports",
     package_dir={'trytond.modules.jasper_reports': '.'},
     packages=[
         'trytond.modules.jasper_reports',
@@ -45,6 +52,7 @@ setup(name='trytond_jasper_reports',
         'Intended Audience :: Legal Industry',
         'License :: OSI Approved :: GNU General Public License (GPL)',
         'Natural Language :: Bulgarian',
+        'Natural Language :: Catalan',
         'Natural Language :: Czech',
         'Natural Language :: Dutch',
         'Natural Language :: English',
