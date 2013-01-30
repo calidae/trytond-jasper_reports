@@ -5,7 +5,6 @@
 from trytond.pool import Pool
 from .data_template import *
 from .model import *
-from .sequence import *
 from .translation import *
 
 
@@ -22,6 +21,4 @@ def register():
         TranslationUpdate,
         TranslationClean,
         module='jasper_reports', type_='wizard')
-    Pool.register(
-        SequenceReport,
-        module='jasper_reports', type_='report')
+
