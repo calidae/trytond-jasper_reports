@@ -3,15 +3,21 @@
 #the full copyright notices and license terms.
 
 from trytond.pool import Pool
+from .data_template import *
+from .model import *
 from .sequence import *
 from .translation import *
 
 
 def register():
     Pool.register(
+        DataTemplateStart,
+        DataTemplateResult,
+        Model,
         Translation,
         module='jasper_reports', type_='model')
     Pool.register(
+        DataTemplate,
         ReportTranslationSet,
         TranslationUpdate,
         TranslationClean,
