@@ -17,7 +17,7 @@ class DataTemplateStart(ModelView):
 
     @staticmethod
     def default_depth():
-        return 1
+        return 3
 
 
 class DataTemplateResult(ModelView):
@@ -52,7 +52,6 @@ class DataTemplate(Wizard):
 
     def default_result(self, fields):
         file_ = self.result.file
-        print file_
         self.result.file = False  # No need to store it in session
         return {
             'file': file_,
