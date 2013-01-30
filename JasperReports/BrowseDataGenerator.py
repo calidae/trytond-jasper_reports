@@ -134,7 +134,7 @@ class BrowseDataGenerator(AbstractDataGenerator):
         
 class CsvBrowseDataGenerator(BrowseDataGenerator):
     # CSV file generation works as follows:
-    # By default (if no OPENERP_RELATIONS property exists in the report) a 
+    # By default (if no TRYTON_RELATIONS property exists in the report) a 
     # record will be created for each model id we've been asked to show. If 
     # there are any elements in the OPENERP_RELATIONS list, they will imply a 
     # LEFT JOIN like behaviour on the rows to be shown.
