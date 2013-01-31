@@ -13,6 +13,7 @@ from trytond.wizard import Wizard
 from trytond.transaction import Transaction
 from trytond.pool import Pool
 from trytond.tools import file_open
+from difflib import SequenceMatcher
 
 __all__ = ['Translation', 'ReportTranslationSet', 'TranslationUpdate', 'TranslationClean']
 
