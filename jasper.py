@@ -32,6 +32,8 @@ class JasperReport(Report):
     def write_properties(cls, filename, properties):
         text = u''
         for key, value in properties.iteritems():
+            if not value:
+                value = key
             key = key.replace(':', '\\:').replace(' ', '\\ ')
             value = value.replace(':', '\\:').replace(' ', '\\ ')
             text += u'%s=%s\n' % (key, value)
