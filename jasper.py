@@ -2,6 +2,7 @@
 #The COPYRIGHT file at the top level of this repository contains
 #the full copyright notices and license terms.
 import os
+import re
 import time
 import tempfile
 import logging
@@ -43,16 +44,38 @@ class JasperReport(Report):
             f.close()
 
     @classmethod
-    def get_report_file(cls, report):
-        path = cls._get_report_file_cache.get(report.name)
-        if path is not None:
-            return path
+    def get_report_file(cls, report, path=None):
+        cache_path = cls._get_report_file_cache.get(report.name)
+        if cache_path is not None:
+            return cache_path
+
+        if not path:
+            path = tempfile.mkdtemp(prefix='trytond-jasper-')
+
         report_content = str(report.report_content)
+
+        # Get subreports in main report
+        #<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "report_name.jrxml"]]></subreportExpression>
+        e = re.compile('<subreportExpression>.*</subreportExpression>')
+        subreports = e.findall(report_content)
+        if subreports:
+            for subreport in subreports:
+                sreport = subreport.split('"')
+                report_fname = sreport[1]
+                report_name = "jasper_reports.%s" % report_fname[:-6] # .jxrml
+                ActionReport = Pool().get('ir.action.report')
+
+                report_actions = ActionReport.search([
+                        ('report_name', '=', report_name)
+                        ])
+                if not report_actions:
+                    raise Exception('Error', 'SubReport (%s) not find!' % report_name)
+                report_action = report_actions[0]
+                report_path = cls.get_report_file(report_action, path)
 
         if not report_content:
             raise Exception('Error', 'Missing report file!')
 
-        path = tempfile.mkdtemp(prefix='trytond-jasper-')
         fname = os.path.split(report.report)[-1]
         basename = fname.split('.')[0]
         jrxml_path = os.path.join(path, fname)
