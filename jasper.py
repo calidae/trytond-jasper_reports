@@ -15,10 +15,12 @@ from trytond.cache import Cache
 
 import JasperReports
 
-# Determines the port where the JasperServer process should listen with its XML-RPC server for incomming calls
+# Determines the port where the JasperServer process should listen with its
+# XML-RPC server for incomming calls
 CONFIG['jasperport'] = CONFIG.get('jasperport', 8090)
 
-# Determines the file name where the process ID of the JasperServer process should be stored
+# Determines the file name where the process ID of the JasperServer
+# process should be stored
 CONFIG['jasperpid'] = CONFIG.get('jasperpid', 'openerp-jasper.pid')
 
 # Determines if temporary files will be removed
@@ -57,21 +59,24 @@ class JasperReport(Report):
         report_content = str(report.report_content)
 
         # Get subreports in main report
-        #<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "report_name.jrxml"]]></subreportExpression>
+        # <subreportExpression>
+        # <![CDATA[$P{SUBREPORT_DIR} + "report_name.jrxml"]]>
+        # </subreportExpression>
         e = re.compile('<subreportExpression>.*</subreportExpression>')
         subreports = e.findall(report_content)
         if subreports:
             for subreport in subreports:
                 sreport = subreport.split('"')
                 report_fname = sreport[1]
-                report_name = "jasper_reports.%s" % report_fname[:-6] # .jxrml
+                report_name = "jasper_reports.%s" % report_fname[:-6]  # .jxrml
                 ActionReport = Pool().get('ir.action.report')
 
                 report_actions = ActionReport.search([
                         ('report_name', '=', report_name)
                         ])
                 if not report_actions:
-                    raise Exception('Error', 'SubReport (%s) not find!' % report_name)
+                    raise Exception('Error', 'SubReport (%s) not find!' %
+                        report_name)
                 report_action = report_actions[0]
                 report_path = cls.get_report_file(report_action, path)
 
@@ -131,7 +136,7 @@ class JasperReport(Report):
         model = report_action.model
         output_format = report_action.extension
 
-        # Create temporary input (CSV) and output (PDF) files 
+        # Create temporary input (CSV) and output (PDF) files
         temporary_files = []
 
         fd, dataFile = tempfile.mkstemp()
@@ -146,15 +151,15 @@ class JasperReport(Report):
 
         # If the language used is xpath create the xmlFile in dataFile.
         if report.language() == 'xpath':
-            if data.get('data_source','model') == 'records':
-                generator = JasperReports.CsvRecordDataGenerator(report, 
+            if data.get('data_source', 'model') == 'records':
+                generator = JasperReports.CsvRecordDataGenerator(report,
                     data['records'])
             else:
-                generator = JasperReports.CsvBrowseDataGenerator(report, model, 
+                generator = JasperReports.CsvBrowseDataGenerator(report, model,
                     ids)
             generator.generate(dataFile)
             temporary_files += generator.temporary_files
-        
+
         subreportDataFiles = []
         for subreportInfo in report.subreports():
             subreport = subreportInfo['report']
@@ -174,7 +179,7 @@ class JasperReport(Report):
                     'dataFile': subreportDataFile,
                     'jrxmlFile': subreportInfo['filename'],
                 })
-                temporary_files.append( subreportDataFile )
+                temporary_files.append(subreportDataFile)
 
                 if subreport.isHeader():
                     generator = JasperReports.CsvBrowseDataGenerator(subreport,
@@ -187,10 +192,9 @@ class JasperReport(Report):
                         model, ids)
                 generator.generate(subreportDataFile)
 
-
         # Start: Report execution section
         locale = Transaction().language
-        
+
         connectionParameters = {
             'output': output_format,
             'csv': dataFile,
@@ -207,17 +211,19 @@ class JasperReport(Report):
         if 'parameters' in data:
             parameters.update(data['parameters'])
 
-        # Call the external java application that will generate the PDF file in outputFile
+        # Call the external java application that will generate the PDF
+        # file in outputFile
         server = JasperReports.JasperServer(int(CONFIG['jasperport']))
         server.setPidFile(CONFIG['jasperpid'])
-        pages = server.execute(connectionParameters, report_path, outputFile, parameters)
+        pages = server.execute(connectionParameters, report_path,
+            outputFile, parameters)
         # End: report execution section
 
         elapsed = (time.time() - start) / 60
-        logger.info("Elapsed: %.4f seconds" % elapsed )
+        logger.info("Elapsed: %.4f seconds" % elapsed)
 
         # Read data from the generated file and return it
-        f = open( outputFile, 'rb')
+        f = open(outputFile, 'rb')
         try:
             file_data = f.read()
         finally:
@@ -227,13 +233,13 @@ class JasperReport(Report):
         if CONFIG['jasperunlink']:
             for file in temporary_files:
                 try:
-                    os.unlink( file )
+                    os.unlink(file)
                 except os.error, e:
                     logger = netsvc.Logger()
                     logger.warning("Could not remove file '%s'." % file)
 
         if Transaction().context.get('return_pages'):
-            return (output_format, buffer(file_data), 
+            return (output_format, buffer(file_data),
                 report_action.direct_print, report_action.name, pages)
 
         return (output_format, buffer(file_data), report_action.direct_print,
@@ -244,7 +250,7 @@ class JasperReport(Report):
         host = CONFIG['db_host'] or 'localhost'
         port = CONFIG['db_port'] or '5432'
         dbname = Transaction().cursor.dbname
-        return 'jdbc:postgresql://%s:%s/%s' % ( host, port, dbname )
+        return 'jdbc:postgresql://%s:%s/%s' % (host, port, dbname)
 
     @classmethod
     def userName(cls):

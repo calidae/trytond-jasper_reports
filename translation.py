@@ -15,7 +15,12 @@ from trytond.pool import Pool
 from trytond.tools import file_open
 from difflib import SequenceMatcher
 
-__all__ = ['Translation', 'ReportTranslationSet', 'TranslationUpdate', 'TranslationClean']
+__all__ = [
+    'Translation',
+    'ReportTranslationSet',
+    'TranslationUpdate',
+    'TranslationClean',
+    ]
 
 
 class Translation(ModelSQL, ModelView):
@@ -130,6 +135,7 @@ class Translation(ModelSQL, ModelView):
             cls.delete(list(translations_to_delete))
         return len(translations)
 
+
 class ReportTranslationSet(Wizard):
     __name__ = "ir.translation.set_report"
 
@@ -141,7 +147,8 @@ class ReportTranslationSet(Wizard):
                 return []
             if node.nodeValue:
                 #re.findall('tr *\([^\(]*,"([^"]*)"\)', 'tr($V{L},"hola manola") + tr($V{L},"adeu andreu")')
-                node_strings = re.findall('tr *\([^\(]*,"([^"]*)"\)', node.nodeValue)
+                node_strings = re.findall('tr *\([^\(]*,"([^"]*)"\)',
+                node.nodeValue)
                 strings += [x for x in node_strings if x]
 
         for child in [x for x in node.childNodes]:
@@ -177,13 +184,13 @@ class ReportTranslationSet(Wizard):
                     done = True
                     break
                 if seqmatch.ratio() > 0.6:
-                    cursor.execute('UPDATE ir_translation ' \
-                            'SET src = %s, ' \
-                                'fuzzy = %s, ' \
-                                'src_md5 = %s ' \
-                            'WHERE name = %s ' \
-                                'AND type = %s ' \
-                                'AND src = %s ' \
+                    cursor.execute('UPDATE ir_translation '
+                            'SET src = %s, '
+                                'fuzzy = %s, '
+                                'src_md5 = %s '
+                            'WHERE name = %s '
+                                'AND type = %s '
+                                'AND src = %s '
                                 'AND module = %s',
                             (string, True, src_md5, report.report_name,
                                 type_, string_trans, report.module))
@@ -191,21 +198,23 @@ class ReportTranslationSet(Wizard):
                     done = True
                     break
             if not done:
-                cursor.execute('INSERT INTO ir_translation ' \
-                        '(name, lang, type, src, value, module, fuzzy, '\
-                         'src_md5)' \
+                cursor.execute('INSERT INTO ir_translation '
+                        '(name, lang, type, src, value, module, fuzzy, '
+                         'src_md5)'
                         'VALUES (%s, %s, %s, %s, %s, %s, %s, %s)',
                         (report.report_name, 'en_US', type_, string, '',
                             report.module, False, src_md5))
         if strings:
-            cursor.execute('DELETE FROM ir_translation ' \
-                    'WHERE name = %s ' \
-                        'AND type = %s ' \
-                        'AND module = %s ' \
-                        'AND src NOT IN ' \
-                            '(' + ','.join(('%s',) * len(strings)) + ')',
-                    (report.report_name, type_, report.module) + \
-                            tuple(strings))
+            cursor.execute('DELETE FROM ir_translation '
+                    'WHERE name = %s '
+                        'AND type = %s '
+                        'AND module = %s '
+                        'AND src NOT IN '
+                            '(' + ','.join(('%s',) * len(strings)) + ')', (
+                                report.report_name,
+                                type_,
+                                report.module
+                                ) + tuple(strings))
 
     def transition_set_report(self):
         pool = Pool()
@@ -214,7 +223,7 @@ class ReportTranslationSet(Wizard):
         result = super(ReportTranslationSet, self).transition_set_report()
 
         with Transaction().set_context(active_test=False):
-            reports = Report.search([('report','ilike','%.jrxml')])
+            reports = Report.search([('report', 'ilike', '%.jrxml')])
 
         if not reports:
             return {}
@@ -222,7 +231,7 @@ class ReportTranslationSet(Wizard):
         for report in reports:
             strings = []
 
-            odt_content = ''
+            # odt_content = ''
             if report.report:
                 with file_open(report.report.replace('/', os.sep),
                         mode='rb') as fp:
@@ -265,6 +274,7 @@ class TranslationUpdate(Wizard):
                     'module': row['module'],
                     })
         return super(TranslationUpdate, self).do_update(action)
+
 
 class TranslationClean(Wizard):
     "Clean translation"

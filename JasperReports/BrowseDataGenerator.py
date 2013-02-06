@@ -1,38 +1,10 @@
-##############################################################################
-#
-# Copyright (c) 2009-2011 NaN Projectes de Programari Lliure, S.L.
-#                         http://www.NaN-tic.com
-#
-# WARNING: This program as such is intended to be used by professional
-# programmers who take the whole responsability of assessing all potential
-# consequences resulting from its eventual inadequacies and bugs
-# End users who are looking for a ready-to-use solution with commercial
-# garantees and support are strongly adviced to contract a Free Software
-# Service Company
-#
-# This program is Free Software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-#
-##############################################################################
+#This file is part jasper_reports module for Tryton.
+#The COPYRIGHT file at the top level of this repository contains
+#the full copyright notices and license terms.
 
 import os
 import csv
-import copy
-from xml.dom.minidom import getDOMImplementation
-import xml.dom.minidom
-import tempfile 
-import codecs
+import tempfile
 
 from JasperReport import *
 from AbstractDataGenerator import *
@@ -43,6 +15,7 @@ from trytond.transaction import Transaction
 
 import logging
 
+
 class BrowseDataGenerator(AbstractDataGenerator):
     def __init__(self, report, model, ids):
         self.report = report
@@ -52,15 +25,15 @@ class BrowseDataGenerator(AbstractDataGenerator):
         self.imageFiles = {}
         self.temporary_files = []
         self.logger = logging.getLogger('jasper_reports')
-    
+
     def warning(self, message):
-    	self.logger.warning(message)
+        self.logger.warning(message)
 
     def languages(self):
         if self._languages:
             return self._languages
         pool = Pool()
-        ids = pool.get('ir.lang').search([('translatable','=','1')])
+        ids = pool.get('ir.lang').search([('translatable', '=', '1')])
         self._languages = [x.code for x in pool.get('ir.lang').browse(ids)]
         return self._languages
 
@@ -80,7 +53,7 @@ class BrowseDataGenerator(AbstractDataGenerator):
         for relation in unrepeated:
             root = relation.partition('/')[0]
             if path:
-                currentPath = '%s/%s' % (path,root)
+                currentPath = '%s/%s' % (path, root)
             else:
                 currentPath = root
             if root == 'Attachments':
@@ -96,18 +69,18 @@ class BrowseDataGenerator(AbstractDataGenerator):
                 elif hasattr(record, root):
                     value = getattr(record, root)
                 else:
-                    self.warning("Field '%s' does not exist in model '%s'." % 
+                    self.warning("Field '%s' does not exist in model '%s'." %
                             (root, record.__name__))
                     continue
 
                 if isinstance(value, Model):
-                    relations2 = [f.partition('/')[2] for f in relations if 
-                            f.partition('/')[0] == root and f.partition('/')[2]]
-                    return self.generateIds(value, relations2, currentPath, 
+                    relations2 = [f.partition('/')[2] for f in relations if
+                        f.partition('/')[0] == root and f.partition('/')[2]]
+                    return self.generateIds(value, relations2, currentPath,
                             currentRecords)
 
                 if not isinstance(value, (list, tuple)):
-                    self.warning("Field '%s' in model '%s' is not a relation." 
+                    self.warning("Field '%s' in model '%s' is not a relation."
                             % (root, self.model))
                     return currentRecords
 
@@ -115,7 +88,7 @@ class BrowseDataGenerator(AbstractDataGenerator):
             # If we wanted an INNER JOIN we wouldn't check for "value" and
             # return an empty currentRecords
             if value:
-                # Only 
+                # Only
                 newRecords = []
                 for v in value:
                     currentNewRecords = []
@@ -123,35 +96,36 @@ class BrowseDataGenerator(AbstractDataGenerator):
                         new = id.copy()
                         new[currentPath] = v
                         currentNewRecords.append(new)
-                    relations2 = [f.partition('/')[2] for f in relations 
-                            if f.partition('/')[0] == root and 
+                    relations2 = [f.partition('/')[2] for f in relations
+                            if f.partition('/')[0] == root and
                             f.partition('/')[2]]
-                    newRecords += self.generateIds(v, relations2, currentPath, 
+                    newRecords += self.generateIds(v, relations2, currentPath,
                             currentNewRecords)
 
                 currentRecords = newRecords
         return currentRecords
-        
+
+
 class CsvBrowseDataGenerator(BrowseDataGenerator):
     # CSV file generation works as follows:
-    # By default (if no TRYTON_RELATIONS property exists in the report) a 
-    # record will be created for each model id we've been asked to show. If 
-    # there are any elements in the OPENERP_RELATIONS list, they will imply a 
+    # By default (if no TRYTON_RELATIONS property exists in the report) a
+    # record will be created for each model id we've been asked to show. If
+    # there are any elements in the OPENERP_RELATIONS list, they will imply a
     # LEFT JOIN like behaviour on the rows to be shown.
     def generate(self, fileName):
         pool = Pool()
 
         self.allRecords = []
         relations = self.report.relations()
-        # The following loop generates one entry to allRecords list for each 
-        # record that will be created. If there are any relations it acts like a
-        # LEFT JOIN against the main model/table.
+        # The following loop generates one entry to allRecords list for each
+        # record that will be created. If there are any relations it acts like
+        # a LEFT JOIN against the main model/table.
         for record in pool.get(self.model).browse(self.ids):
             newRecords = self.generateIds(record, relations, '', [{
                     'root': record
                     }])
             copies = 1
-            if self.report.copiesField() and hasattr(record, 
+            if self.report.copiesField() and hasattr(record,
                     self.report.copiesField()):
                 copies = int(getattr(record, self.report.copiesField()))
             for new in newRecords:
@@ -161,9 +135,9 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
         f = open(fileName, 'wb+')
         try:
             csv.QUOTE_ALL = True
-            # JasperReports CSV reader requires an extra colon at the end of 
+            # JasperReports CSV reader requires an extra colon at the end of
             # the line.
-            writer = csv.DictWriter(f, self.report.fieldNames() + [''], 
+            writer = csv.DictWriter(f, self.report.fieldNames() + [''],
                     delimiter=",", quotechar='"')
             header = {}
             for field in self.report.fieldNames() + ['']:
@@ -171,13 +145,13 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
                     name = field.encode('utf-8')
                 else:
                     name = field
-                header[ field ] = name
+                header[field] = name
             writer.writerow(header)
-            # Once all records have been calculated, create the CSV structure 
+            # Once all records have been calculated, create the CSV structure
             # itself
             for records in self.allRecords:
                 row = {}
-                self.generateCsvRecord(records['root'], records, row, '', 
+                self.generateCsvRecord(records['root'], records, row, '',
                         self.report.fields())
                 writer.writerow(row)
         finally:
@@ -190,7 +164,7 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
         for field in unrepeated:
             root = field.partition('/')[0]
             if path:
-                currentPath = '%s/%s' % (path,root)
+                currentPath = '%s/%s' % (path, root)
             else:
                 currentPath = root
             if root == 'Attachments':
@@ -209,14 +183,14 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
                 else:
                     value = None
                     self.warning("Field '%s' (path: %s) does not exist in "
-                            "model '%s'." % (root, currentPath, 
+                            "model '%s'." % (root, currentPath,
                             record.__name__))
 
             # Check if it's a many2one
             if isinstance(value, Model):
-                fields2 = [f.partition('/')[2] for f in fields if 
-                        f.partition('/')[0] == root ]
-                self.generateCsvRecord(value, records, row, currentPath, 
+                fields2 = [f.partition('/')[2] for f in fields if
+                        f.partition('/')[0] == root]
+                self.generateCsvRecord(value, records, row, currentPath,
                         fields2)
                 continue
 
@@ -224,24 +198,25 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
             if isinstance(value, (list, tuple)):
                 if not value:
                     continue
-                fields2 = [f.partition('/')[2] for f in fields 
+                fields2 = [f.partition('/')[2] for f in fields
                         if f.partition('/')[0] == root]
                 if currentPath in records:
-                    self.generateCsvRecord(records[currentPath], records, row, 
+                    self.generateCsvRecord(records[currentPath], records, row,
                             currentPath, fields2)
                 else:
-                    # If the field is not marked to be iterated use the first record only
-                    self.generateCsvRecord(value[0], records, row, 
+                    # If the field is not marked to be iterated use the first
+                    # record only
+                    self.generateCsvRecord(value[0], records, row,
                             currentPath, fields2)
                 continue
 
             # The field might not appear in the self.report.fields()
-            # only when the field is a many2one but in this case it's null. 
-            # This will make the path to look like: "journal_id", when the 
+            # only when the field is a many2one but in this case it's null.
+            # This will make the path to look like: "journal_id", when the
             # field actually in the report is "journal_id/name", for example.
             #
-            # In order not to change the way we detect many2one fields, we 
-            # simply check that the field is in self.report.fields() and that's 
+            # In order not to change the way we detect many2one fields, we
+            # simply check that the field is in self.report.fields() and that's
             # it.
             if not currentPath in self.report.fields():
                 continue
@@ -258,17 +233,17 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
 
             # The rest of field types must be converted into str
             if field == 'id':
-                # Check for field 'id' because we can't find it's 
+                # Check for field 'id' because we can't find it's
                 # type in _fields
                 value = str(value)
-            elif value in (False,None):
+            elif value in (False, None):
                 value = ''
             elif field_type == 'date':
-                value = '%s 00:00:00' % str(value) 
+                value = '%s 00:00:00' % str(value)
             elif field_type == 'binary':
                 imageId = (record.id, field)
                 if imageId in self.imageFiles:
-                    fileName = self.imageFiles[ imageId ]
+                    fileName = self.imageFiles[imageId]
                 else:
                     fd, fileName = tempfile.mkstemp()
                     try:
@@ -276,7 +251,7 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
                     finally:
                         os.close(fd)
                     self.temporary_files.append(fileName)
-                    self.imageFiles[ imageId ] = fileName
+                    self.imageFiles[imageId] = fileName
                 value = fileName
             elif isinstance(value, unicode):
                 value = value.encode('utf-8')
@@ -284,5 +259,4 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
                 value = '%.10f' % value
             elif not isinstance(value, str):
                 value = str(value)
-            row[ self.report.fields()[currentPath]['name'] ] = value
-
+            row[self.report.fields()[currentPath]['name']] = value
