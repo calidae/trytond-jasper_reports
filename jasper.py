@@ -235,7 +235,6 @@ class JasperReport(Report):
                 try:
                     os.unlink(file)
                 except os.error, e:
-                    logger = netsvc.Logger()
                     logger.warning("Could not remove file '%s'." % file)
 
         if Transaction().context.get('return_pages'):
