@@ -40,7 +40,7 @@ class JasperReport(Report):
             value = value.replace(':', '\\:').replace(' ', '\\ ')
             text += u'%s=%s\n' % (key, value)
         import codecs
-        f = codecs.open(filename, 'w', 'utf-8')
+        f = codecs.open(filename, 'w', 'latin1')
         #f = open(filename, 'w')
         try:
             f.write(text)
