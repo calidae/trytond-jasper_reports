@@ -21,7 +21,7 @@ CONFIG['jasperport'] = CONFIG.get('jasperport', 8090)
 
 # Determines the file name where the process ID of the JasperServer
 # process should be stored
-CONFIG['jasperpid'] = CONFIG.get('jasperpid', 'openerp-jasper.pid')
+CONFIG['jasperpid'] = CONFIG.get('jasperpid', 'tryton-jasper.pid')
 
 # Determines if temporary files will be removed
 CONFIG['jasperunlink'] = CONFIG.get('jasperunlink', True)
