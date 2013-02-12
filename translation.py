@@ -48,6 +48,7 @@ class Translation(ModelSQL, ModelView):
             fs_id2model_data[model_data.model][model_data.fs_id] = model_data
 
         translations = set()
+        to_create = []
         pofile = polib.pofile(po_path)
 
         id2translation = {}
@@ -102,7 +103,7 @@ class Translation(ModelSQL, ModelView):
             with contextlib.nested(Transaction().set_user(0),
                     Transaction().set_context(module=module)):
                 if not ids:
-                    translations.add(cls.create({
+                    to_create.append({
                         'name': name,
                         'res_id': res_id,
                         'lang': lang,
@@ -111,7 +112,7 @@ class Translation(ModelSQL, ModelView):
                         'value': value,
                         'fuzzy': fuzzy,
                         'module': module,
-                        }))
+                        })
                 else:
                     translations2 = []
                     for translation_id in ids:
@@ -125,6 +126,9 @@ class Translation(ModelSQL, ModelView):
                             'fuzzy': fuzzy,
                             })
                     translations |= set(cls.browse(ids))
+
+        if to_create:
+            translations |= set(cls.create(to_create))
 
         if translations:
             all_translations = set(cls.search([
@@ -265,14 +269,14 @@ class TranslationUpdate(Wizard):
             (lang,))
         for row in cursor.dictfetchall():
             with Transaction().set_user(0):
-                Translation.create({
+                Translation.create([{
                     'name': row['name'],
                     'res_id': row['res_id'],
                     'lang': lang,
                     'type': row['type'],
                     'src': row['src'],
                     'module': row['module'],
-                    })
+                    }])
         return super(TranslationUpdate, self).do_update(action)
 
 
