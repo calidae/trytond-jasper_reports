@@ -77,8 +77,8 @@ class JasperReport(Report):
                 if not report_actions:
                     raise Exception('Error', 'SubReport (%s) not find!' %
                         report_name)
-                report_action = report_actions[0]
-                report_path = cls.get_report_file(report_action, path)
+                #report_action = report_actions[0]
+                #report_path = cls.get_report_file(report_action, path)
 
         if not report_content:
             raise Exception('Error', 'Missing report file!')
@@ -186,7 +186,7 @@ class JasperReport(Report):
                         'res.users', [Transaction().user])
                 elif data.get('data_source', 'model') == 'records':
                     generator = JasperReports.CsvRecordDataGenerator(subreport,
-                        datas['records'])
+                        data['records'])
                 else:
                     generator = JasperReports.CsvBrowseDataGenerator(subreport,
                         model, ids)
@@ -234,7 +234,7 @@ class JasperReport(Report):
             for file in temporary_files:
                 try:
                     os.unlink(file)
-                except os.error, e:
+                except os.error:
                     logger.warning("Could not remove file '%s'." % file)
 
         if Transaction().context.get('return_pages'):

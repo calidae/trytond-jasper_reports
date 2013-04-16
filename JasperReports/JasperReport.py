@@ -208,12 +208,9 @@ class JasperReport:
             if pathPrefixTags and 'value' in pathPrefixTags[0].keys():
                 pathPrefix = pathPrefixTags[0].get('value')
 
-            isHeader = False
             headerTags = tag.xpath(
                 '//jr:reportElement/jr:property[@name="TRYTON_HEADER"]',
                 namespaces=nss)
-            #if headerTags and 'value' in headerTags[0].keys():
-            #    isHeader = True
 
             # Add our own pathPrefix to subreport's pathPrefix
             subPrefix = []

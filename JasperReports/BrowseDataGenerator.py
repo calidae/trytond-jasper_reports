@@ -6,8 +6,7 @@ import os
 import csv
 import tempfile
 
-from JasperReport import *
-from AbstractDataGenerator import *
+from AbstractDataGenerator import AbstractDataGenerator
 
 from trytond.model import Model
 from trytond.pool import Pool
@@ -158,6 +157,10 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
             f.close()
 
     def generateCsvRecord(self, record, records, row, path, fields):
+        pool = Pool()
+        Attachment = pool.get('ir.attachment')
+        User = pool.get('res.user')
+
         # One field (many2one, many2many or one2many) can appear several times.
         # Process each "root" field only once by using a set.
         unrepeated = set([field.partition('/')[0] for field in fields])
@@ -168,13 +171,12 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
             else:
                 currentPath = root
             if root == 'Attachments':
-                value = pool.get('ir.attachment').search([
+                value = Attachment.search([
                         ('res_model', '=', record.__name__),
                         ('res_id', '=', record.id)
                         ])
-                value = pool.get('ir.attachment').browse(ids)
             elif root == 'User':
-                value = pool.get('res.user').browse(Transaction().user)
+                value = User(Transaction().user)
             else:
                 if root == 'id':
                     value = record.id
