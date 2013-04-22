@@ -228,10 +228,7 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
             if type == 'java.lang.Object':
                 value = self.valueInAllLanguages(record, record.id, root)
 
-            if field in record._fields:
-                field_type = record._fields[field]._type
-            elif field in record._inherit_fields:
-                field_type = record._inherit_fields[field][2]._type
+            field_type = record._fields[field]._type
 
             # The rest of field types must be converted into str
             if field == 'id':
