@@ -157,8 +157,9 @@ class JasperReport(Report):
             else:
                 generator = JasperReports.CsvBrowseDataGenerator(report, model,
                     ids)
+                temporary_files += generator.temporary_files
+
             generator.generate(dataFile)
-            temporary_files += generator.temporary_files
 
         subreportDataFiles = []
         for subreportInfo in report.subreports():
