@@ -13,6 +13,7 @@ from trytond.wizard import Wizard
 from trytond.transaction import Transaction
 from trytond.pool import Pool
 from trytond.tools import file_open
+from trytond.const import RECORD_CACHE_SIZE
 from difflib import SequenceMatcher
 
 __all__ = [
@@ -42,10 +43,15 @@ class Translation(ModelSQL, ModelView):
         models_data = ModelData.search([
                 ('module', '=', module),
                 ])
-        fs_id2model_data = {}
+        fs_id2prop = {}
         for model_data in models_data:
-            fs_id2model_data.setdefault(model_data.model, {})
-            fs_id2model_data[model_data.model][model_data.fs_id] = model_data
+            fs_id2prop.setdefault(model_data.model, {})
+            fs_id2prop[model_data.model][model_data.fs_id] = \
+                (model_data.db_id, model_data.noupdate)
+            for extra_model in cls.extra_model_data(model_data):
+                fs_id2prop.setdefault(extra_model, {})
+                fs_id2prop[extra_model][model_data.fs_id] = \
+                    (model_data.db_id, model_data.noupdate)
 
         translations = set()
         to_create = []
@@ -54,78 +60,123 @@ class Translation(ModelSQL, ModelView):
         id2translation = {}
         key2ids = {}
         module_translations = cls.search([
-            ('lang', '=', lang),
-            ('module', '=', module),
-            ])
+                ('lang', '=', lang),
+                ('module', '=', module),
+                ], order=[])
         for translation in module_translations:
             if translation.type in ('odt', 'view', 'wizard_button',
-                    'selection', 'error', 'jasper'):
+                    'selection', 'error'):
                 key = (translation.name, translation.res_id, translation.type,
-                        translation.src)
+                    translation.src)
             elif translation.type in ('field', 'model', 'help'):
                 key = (translation.name, translation.res_id, translation.type)
             else:
                 raise Exception('Unknow translation type: %s'
                     % translation.type)
             key2ids.setdefault(key, []).append(translation.id)
-            id2translation[translation.id] = translation
+            if len(module_translations) <= RECORD_CACHE_SIZE:
+                id2translation[translation.id] = translation
 
-        for entry in pofile:
-            ttype, name, res_id = entry.msgctxt.split(':')
-            src = entry.msgid
-            value = entry.msgstr
-            fuzzy = 'fuzzy' in entry.flags
-            noupdate = False
-
-            model = name.split(',')[0]
-            if model in fs_id2model_data and res_id in fs_id2model_data[model]:
-                model_data = fs_id2model_data[model][res_id]
-                res_id = model_data.db_id
-                noupdate = model_data.noupdate
-
+        def override_translation(ressource_id, new_translation, fuzzy):
+            res_id_module, res_id = ressource_id.split('.')
             if res_id:
-                try:
-                    res_id = int(res_id)
-                except ValueError:
-                    continue
-            if not res_id:
-                res_id = None
-
-            if ttype in ('odt', 'view', 'wizard_button', 'selection', 'error',
-                    'jasper'):
-                key = (name, res_id, ttype, src)
-            elif ttype in('field', 'model', 'help'):
-                key = (name, res_id, ttype)
+                model_data, = ModelData.search([
+                        ('module', '=', res_id_module),
+                        ('fs_id', '=', res_id),
+                        ])
+                res_id = model_data.db_id
             else:
-                raise Exception('Unknow translation type: %s' % ttype)
-            ids = key2ids.get(key, [])
-
+                res_id = -1
             with contextlib.nested(Transaction().set_user(0),
-                    Transaction().set_context(module=module)):
-                if not ids:
-                    to_create.append({
-                        'name': name,
-                        'res_id': res_id,
-                        'lang': lang,
-                        'type': ttype,
-                        'src': src,
-                        'value': value,
-                        'fuzzy': fuzzy,
-                        'module': module,
-                        })
+                    Transaction().set_context(module=res_id_module)):
+                translation, = cls.search([
+                        ('name', '=', name),
+                        ('res_id', '=', res_id),
+                        ('lang', '=', lang),
+                        ('type', '=', ttype),
+                        ('module', '=', res_id_module),
+                        ])
+                if translation.value != new_translation:
+                    translation.value = new_translation
+                    translation.overriding_module = module
+                    translation.fuzzy = fuzzy
+                    translation.save()
+
+        # Make a first loop to retreive translation ids in the right order to
+        # get better read locality and a full usage of the cache.
+        translation_ids = []
+        if len(module_translations) <= RECORD_CACHE_SIZE:
+            processes = (True,)
+        else:
+            processes = (False, True)
+        for processing in processes:
+            if processing and len(module_translations) > RECORD_CACHE_SIZE:
+                id2translation = dict((t.id, t)
+                    for t in Translation.browse(translation_ids))
+            for entry in pofile:
+                ttype, name, res_id = entry.msgctxt.split(':')
+                src = entry.msgid
+                value = entry.msgstr
+                fuzzy = 'fuzzy' in entry.flags
+                noupdate = False
+
+                if '.' in res_id:
+                    override_translation(res_id, value, fuzzy)
+                    continue
+
+                model = name.split(',')[0]
+                if (model in fs_id2prop
+                        and res_id in fs_id2prop[model]):
+                    res_id, noupdate = fs_id2prop[model][res_id]
+
+                if res_id:
+                    try:
+                        res_id = int(res_id)
+                    except ValueError:
+                        continue
+                if not res_id:
+                    res_id = -1
+
+                if ttype in ('odt', 'view', 'wizard_button', 'selection',
+                        'error', 'jasper'):
+                    key = (name, res_id, ttype, src)
+                elif ttype in('field', 'model', 'help'):
+                    key = (name, res_id, ttype)
                 else:
-                    translations2 = []
-                    for translation_id in ids:
-                        translation = id2translation[translation_id]
-                        if translation.value != value \
-                                or translation.fuzzy != fuzzy:
-                            translations2.append(translation)
-                    if translations2 and not noupdate:
-                        cls.write(translations2, {
+                    raise Exception('Unknow translation type: %s' % ttype)
+                ids = key2ids.get(key, [])
+
+                if not processing:
+                    translation_ids.extend(ids)
+                    continue
+
+                with contextlib.nested(Transaction().set_user(0),
+                        Transaction().set_context(module=module)):
+                    if not ids:
+                        to_create.append({
+                            'name': name,
+                            'res_id': res_id,
+                            'lang': lang,
+                            'type': ttype,
+                            'src': src,
                             'value': value,
                             'fuzzy': fuzzy,
+                            'module': module,
+                            'overriding_module': None,
                             })
-                    translations |= set(cls.browse(ids))
+                    else:
+                        translations2 = []
+                        for translation_id in ids:
+                            translation = id2translation[translation_id]
+                            if translation.value != value \
+                                    or translation.fuzzy != fuzzy:
+                                translations2.append(translation)
+                        if translations2 and not noupdate:
+                            cls.write(translations2, {
+                                'value': value,
+                                'fuzzy': fuzzy,
+                                })
+                        translations |= set(cls.browse(ids))
 
         if to_create:
             translations |= set(cls.create(to_create))
