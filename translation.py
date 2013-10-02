@@ -65,7 +65,7 @@ class Translation(ModelSQL, ModelView):
                 ], order=[])
         for translation in module_translations:
             if translation.type in ('odt', 'view', 'wizard_button',
-                    'selection', 'error'):
+                    'selection', 'error', 'jasper'):
                 key = (translation.name, translation.res_id, translation.type,
                     translation.src)
             elif translation.type in ('field', 'model', 'help'):
