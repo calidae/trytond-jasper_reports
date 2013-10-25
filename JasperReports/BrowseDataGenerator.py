@@ -180,10 +180,13 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
             else:
                 if root == 'id':
                     value = record.id
+                    field_type = record._fields[field]._type
                 elif hasattr(record, root):
                     value = getattr(record, root)
+                    field_type = record._fields[field]._type
                 else:
                     value = None
+                    field_type = None
                     self.warning("Field '%s' (path: %s) does not exist in "
                             "model '%s'." % (root, currentPath,
                             record.__name__))
@@ -227,8 +230,6 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
             type = self.report.fields()[currentPath]['type']
             if type == 'java.lang.Object':
                 value = self.valueInAllLanguages(record, record.id, root)
-
-            field_type = record._fields[field]._type
 
             # The rest of field types must be converted into str
             if field == 'id':
