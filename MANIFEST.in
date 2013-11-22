@@ -5,6 +5,7 @@ include COPYRIGHT
 include CHANGELOG
 include LICENSE
 include *.xml
-include *.jrxml
 include locale/*.po
 include doc/*
+include tests/*
+include JasperReports/*
