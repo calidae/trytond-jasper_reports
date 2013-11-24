@@ -75,7 +75,7 @@ class JasperReport(Report):
                         ('report_name', '=', report_name)
                         ])
                 if not report_actions:
-                    raise Exception('Error', 'SubReport (%s) not find!' %
+                    raise Exception('Error', 'SubReport (%s) not found!' %
                         report_name)
                 #report_action = report_actions[0]
                 #report_path = cls.get_report_file(report_action, path)
@@ -129,7 +129,7 @@ class JasperReport(Report):
                 ('report_name', '=', cls.__name__)
                 ])
         if not report_actions:
-            raise Exception('Error', 'Report (%s) not find!' % cls.__name__)
+            raise Exception('Error', 'Report (%s) not found!' % cls.__name__)
         report_action = report_actions[0]
         report_path = cls.get_report_file(report_action)
         report = JasperReports.JasperReport(report_path)
