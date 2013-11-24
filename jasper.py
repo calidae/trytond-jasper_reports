@@ -135,6 +135,8 @@ class JasperReport(Report):
         report = JasperReports.JasperReport(report_path)
         model = report_action.model
         output_format = report_action.extension
+        if 'output_format' in data:
+            output_format = data['output_format']
 
         # Create temporary input (CSV) and output (PDF) files
         temporary_files = []
