@@ -112,11 +112,6 @@ public class JasperServer {
 
 		report = (JasperReport) JRLoader.loadObject( jasperPath( jrxmlPath ) );
 
-		// Add SUBREPORT_DIR parameter
-		index = jrxmlPath.lastIndexOf('/');
-		if ( index != -1 )
-			parameters.put( "SUBREPORT_DIR", jrxmlPath.substring( 0, index+1 ) );
-
 		// Declare it outside the parameters loop because we'll use it when we will create the data source.
 		Translator translator = null;
 
