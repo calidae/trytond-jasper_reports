@@ -73,7 +73,6 @@ class JasperServer(trytond.error.WarningErrorMixin):
         try:
             return self.proxy.Report.execute(*args)
         except (xmlrpclib.ProtocolError, socket.error), e:
-            #self.info("First try not work: %s / %s" % (str(e), str(e.args)))
             self.start()
             for x in xrange(40):
                 time.sleep(1)
@@ -84,8 +83,6 @@ class JasperServer(trytond.error.WarningErrorMixin):
                     pass
                 except xmlrpclib.Fault, e:
                     self.error("EXCEPTION: %s %s" % (str(e), str(e.args)))
-                    #self.raise_user_error('jasper-error', (e.faultString,))
                     raise
         except xmlrpclib.Fault, e:
-            #self.raise_user_error('jasper-error', (e.faultString,))
             raise
