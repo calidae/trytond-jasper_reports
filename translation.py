@@ -11,7 +11,7 @@ import contextlib
 from trytond.model import ModelView, ModelSQL
 from trytond.wizard import Wizard
 from trytond.transaction import Transaction
-from trytond.pool import Pool
+from trytond.pool import Pool, PoolMeta
 from trytond.tools import file_open
 from trytond.const import RECORD_CACHE_SIZE
 from difflib import SequenceMatcher
@@ -23,8 +23,10 @@ __all__ = [
     'TranslationClean',
     ]
 
+__metaclass__ = PoolMeta
 
-class Translation(ModelSQL, ModelView):
+
+class Translation:
     __name__ = 'ir.translation'
 
     @classmethod
@@ -191,8 +193,8 @@ class Translation(ModelSQL, ModelView):
         return len(translations)
 
 
-class ReportTranslationSet(Wizard):
-    __name__ = "ir.translation.set_report"
+class ReportTranslationSet:
+    __name__ = "ir.translation.set"
 
     def _translate_jasper_report(self, node):
         strings = []
@@ -201,7 +203,6 @@ class ReportTranslationSet(Wizard):
                     node.parentNode.tagName.endswith('Expression')):
                 return []
             if node.nodeValue:
-                #re.findall('tr *\([^\(]*,"([^"]*)"\)', 'tr($V{L},"hola manola") + tr($V{L},"adeu andreu")')
                 node_strings = re.findall('tr *\([^\(]*,"([^"]*)"\)',
                 node.nodeValue)
                 strings += [x for x in node_strings if x]
@@ -214,15 +215,16 @@ class ReportTranslationSet(Wizard):
         Translation = Pool().get('ir.translation')
         cursor = Transaction().cursor
 
-        cursor.execute('SELECT id, name, src FROM ir_translation '
-            'WHERE lang = %s '
-                'AND type = %s '
-                'AND name = %s '
-                'AND module = %s',
-            ('en_US', type_, report.report_name, report.module or ''))
+        translations = Translation.search([
+                ('lang', '=', 'en_US'),
+                ('type', '=', type_),
+                ('name', '=', report.report_name),
+                ('module', '=', report.module or ''),
+                ])
         trans_reports = {}
-        for trans in cursor.dictfetchall():
-            trans_reports[trans['src']] = trans
+        to_create = []
+        for trans in translations:
+            trans_reports[trans.src] = trans
         for string in {}.fromkeys(strings).keys():
             src_md5 = Translation.get_src_md5(string)
             done = False
@@ -253,29 +255,32 @@ class ReportTranslationSet(Wizard):
                     done = True
                     break
             if not done:
-                cursor.execute('INSERT INTO ir_translation '
-                        '(name, lang, type, src, value, module, fuzzy, '
-                         'src_md5)'
-                        'VALUES (%s, %s, %s, %s, %s, %s, %s, %s)',
-                        (report.report_name, 'en_US', type_, string, '',
-                            report.module, False, src_md5))
+                to_create.append({
+                        'name': report.report_name,
+                        'lang': 'en_US',
+                        'type': type_,
+                        'src': string,
+                        'module': report.module,
+                        })
+        if to_create:
+            Translation.create(to_create)
         if strings:
             cursor.execute('DELETE FROM ir_translation '
                     'WHERE name = %s '
                         'AND type = %s '
                         'AND module = %s '
                         'AND src NOT IN '
-                            '(' + ','.join(('%s',) * len(strings)) + ')', (
+                        '(' + ','.join(('%s',) * len(strings)) + ')', (
                                 report.report_name,
                                 type_,
                                 report.module
                                 ) + tuple(strings))
 
-    def transition_set_report(self):
+    def set_report(self):
         pool = Pool()
         Report = pool.get('ir.action.report')
 
-        result = super(ReportTranslationSet, self).transition_set_report()
+        result = super(ReportTranslationSet, self).set_report()
 
         with Transaction().set_context(active_test=False):
             reports = Report.search([('report', 'ilike', '%.jrxml')])
@@ -300,7 +305,7 @@ class ReportTranslationSet(Wizard):
         return result
 
 
-class TranslationUpdate(Wizard):
+class TranslationUpdate:
     __name__ = "ir.translation.update"
 
     def do_update(self, action):
@@ -318,16 +323,19 @@ class TranslationUpdate(Wizard):
             "WHERE lang=%s "
                 "AND type = 'jasper'",
             (lang,))
+        to_create = []
         for row in cursor.dictfetchall():
-            with Transaction().set_user(0):
-                Translation.create([{
+            to_create.append({
                     'name': row['name'],
                     'res_id': row['res_id'],
                     'lang': lang,
                     'type': row['type'],
                     'src': row['src'],
                     'module': row['module'],
-                    }])
+                    })
+        if to_create:
+            with Transaction().set_user(0):
+                Translation.create(to_create)
         return super(TranslationUpdate, self).do_update(action)
 
 
