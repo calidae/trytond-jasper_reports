@@ -105,7 +105,7 @@ class JasperReport(Report):
             if lang != translation.lang:
                 if lang:
                     pfile = os.path.join(path, '%s_%s.properties' % (
-                            basename, lang))
+                            basename, lang.lower()))
                     cls.write_properties(pfile, p)
                     #p.store(open(pfile, 'w'))
                 lang = translation.lang

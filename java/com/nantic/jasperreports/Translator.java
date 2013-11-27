@@ -30,9 +30,9 @@ public class Translator {
 		if ( unavailableResources.containsKey( locale ) )
 			return false;
 		if ( ! resources.containsKey( locale ) ) {
-			
-			String fileName = baseName + "_" + locale.toString() + ".properties";
-			ResourceBundle bundle; 
+
+			String fileName = baseName + "_" + locale.toString().toLowerCase() + ".properties";
+			ResourceBundle bundle;
 			try {
 				FileInputStream fis = new FileInputStream( fileName );
 				bundle = new PropertyResourceBundle(fis);
