@@ -114,7 +114,7 @@ class JasperReport(Report):
             p[translation.src] = translation.value
         if lang:
             pfile = os.path.join(path, '%s_%s.properties' % (
-                    basename, lang))
+                    basename, lang.lower()))
             cls.write_properties(pfile, p)
         cls._get_report_file_cache.set(report.name, jrxml_path)
         return jrxml_path
