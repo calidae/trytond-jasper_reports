@@ -49,7 +49,7 @@ class JasperReport(Report):
 
     @classmethod
     def get_report_file(cls, report, path=None):
-        cache_path = cls._get_report_file_cache.get(report.name)
+        cache_path = cls._get_report_file_cache.get(report.id)
         if cache_path is not None:
             return cache_path
 
@@ -116,7 +116,7 @@ class JasperReport(Report):
             pfile = os.path.join(path, '%s_%s.properties' % (
                     basename, lang.lower()))
             cls.write_properties(pfile, p)
-        cls._get_report_file_cache.set(report.name, jrxml_path)
+        cls._get_report_file_cache.set(report.id, jrxml_path)
         return jrxml_path
 
     @classmethod
