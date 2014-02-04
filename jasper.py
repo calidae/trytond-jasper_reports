@@ -51,7 +51,8 @@ class JasperReport(Report):
     def get_report_file(cls, report, path=None):
         cache_path = cls._get_report_file_cache.get(report.id)
         if cache_path is not None:
-            return cache_path
+            if os.path.isfile(cache_path):
+                return cache_path
 
         if not path:
             path = tempfile.mkdtemp(prefix='trytond-jasper-')
