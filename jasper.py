@@ -58,6 +58,7 @@ class JasperReport(Report):
             path = tempfile.mkdtemp(prefix='trytond-jasper-')
 
         report_content = str(report.report_content)
+        report_names = [report.report_name]
 
         # Get subreports in main report
         # <subreportExpression>
@@ -69,7 +70,7 @@ class JasperReport(Report):
             for subreport in subreports:
                 sreport = subreport.split('"')
                 report_fname = sreport[1]
-                report_name = "jasper_reports.%s" % report_fname[:-6]  # .jxrml
+                report_name = report_fname[:-7]  # .jasper
                 ActionReport = Pool().get('ir.action.report')
 
                 report_actions = ActionReport.search([
@@ -78,8 +79,9 @@ class JasperReport(Report):
                 if not report_actions:
                     raise Exception('Error', 'SubReport (%s) not found!' %
                         report_name)
-                #report_action = report_actions[0]
-                #report_path = cls.get_report_file(report_action, path)
+                report_action = report_actions[0]
+                cls.get_report_file(report_action, path)
+                report_names.append(report_name)
 
         if not report_content:
             raise Exception('Error', 'Missing report file!')
@@ -96,7 +98,7 @@ class JasperReport(Report):
         Translation = Pool().get('ir.translation')
         translations = Translation.search([
                 ('type', '=', 'jasper'),
-                ('name', '=', report.report_name),
+                ('name', 'in', report_names),
                 ], order=[
                 ('lang', 'ASC'),
                 ])
@@ -207,13 +209,11 @@ class JasperReport(Report):
             'password': cls.password(),
             'subreports': subreportDataFiles,
         }
-        subreport_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-            '..', os.path.dirname(report_action.report)) + os.sep
         parameters = {
             'STANDARD_DIR': report.standardDirectory(),
             'REPORT_LOCALE': locale,
             'IDS': ids,
-            'SUBREPORT_DIR': subreport_dir,
+            'SUBREPORT_DIR': os.path.dirname(report_path) + os.path.sep,
             'REPORT_DIR': os.path.dirname(report_path),
         }
         if 'parameters' in data:

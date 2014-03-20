@@ -264,6 +264,13 @@ class JasperReport:
             relationTags = tag.xpath(
                 '../../jr:reportElement/jr:property[@name="TRYTON_RELATIONS"]',
                 namespaces=nss)
+            #Add suport for crosstabs. (reportElement is one level upper)
+            if not relationTags:
+                relationTags = tag.xpath(
+                    '../../../jr:reportElement/jr:property'
+                    '[@name="TRYTON_RELATIONS"]',
+                    namespaces=nss)
+
             if relationTags and 'value' in relationTags[0].keys():
                 relation = relationTags[0].get('value').strip()
                 if relation.startswith('['):
