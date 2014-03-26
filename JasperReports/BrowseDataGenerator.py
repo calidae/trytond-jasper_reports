@@ -172,8 +172,7 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
                 currentPath = root
             if root == 'Attachments':
                 value = Attachment.search([
-                        ('res_model', '=', record.__name__),
-                        ('res_id', '=', record.id)
+                        ('resource', '=', str(record)),
                         ])
             elif root == 'User':
                 value = User(Transaction().user)
