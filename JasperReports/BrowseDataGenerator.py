@@ -57,8 +57,7 @@ class BrowseDataGenerator(AbstractDataGenerator):
                 currentPath = root
             if root == 'Attachments':
                 value = pool.get('ir.attachment').search([
-                        ('res_model', '=', record.__name__),
-                        ('res_id', '=', record.id)
+                        ('resource', '=', str(record)),
                         ])
             elif root == 'User':
                 value = pool.get('res.user').browse([Transaction().user])
