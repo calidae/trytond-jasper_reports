@@ -209,10 +209,13 @@ class JasperReport(Report):
             'password': cls.password(),
             'subreports': subreportDataFiles,
         }
+        sources_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+            '..', os.path.dirname(report_action.report)) + os.sep
         parameters = {
             'STANDARD_DIR': report.standardDirectory(),
             'REPORT_LOCALE': locale,
             'IDS': ids,
+            'SOURCES_DIR': sources_dir,
             'SUBREPORT_DIR': os.path.dirname(report_path) + os.path.sep,
             'REPORT_DIR': os.path.dirname(report_path),
         }
