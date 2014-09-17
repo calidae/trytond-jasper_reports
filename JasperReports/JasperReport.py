@@ -161,18 +161,6 @@ class JasperReport:
         #</subreport>
         subreportTags = doc.xpath('//jr:subreport', namespaces=nss)
         for tag in subreportTags:
-            dataSourceExpression = tag.findtext(
-                '{%s}dataSourceExpression' % ns, '')
-            if not dataSourceExpression:
-                continue
-            dataSourceExpression = dataSourceExpression.strip()
-            m = dataSourceExpressionRegExp.match(dataSourceExpression)
-            if not m:
-                continue
-            dataSourceExpression = m.group(1)
-            if dataSourceExpression == 'REPORT_DATA_SOURCE':
-                continue
-
             subreportExpression = tag.findtext(
                 '{%s}subreportExpression' % ns, '')
             if not subreportExpression:
@@ -219,6 +207,15 @@ class JasperReport:
             if pathPrefix:
                 subPrefix.append(pathPrefix)
             subPrefix = '/'.join(subPrefix)
+
+            dataSourceExpression = tag.findtext(
+                '{%s}dataSourceExpression' % ns, '')
+            if dataSourceExpression:
+                dataSourceExpression = dataSourceExpression.strip()
+                m = dataSourceExpressionRegExp.match(dataSourceExpression)
+                if not m:
+                    continue
+                dataSourceExpression = m.group(1)
 
             subreport = JasperReport(subreportExpression, subPrefix)
             self._subreports.append({
