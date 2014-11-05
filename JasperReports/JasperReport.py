@@ -6,7 +6,7 @@ import os
 from lxml import etree
 import re
 from trytond.tools import safe_eval
-from trytond.config import CONFIG
+from trytond.config import config
 
 dataSourceExpressionRegExp = re.compile(r"""\$P\{(\w+)\}""")
 
@@ -58,7 +58,7 @@ class JasperReport:
             self._reportPath)), '')
 
     def standardDirectory(self):
-        jasperdir = CONFIG.get('jasperdir')
+        jasperdir = config.get('jasper', 'directory')
         if jasperdir:
             if jasperdir.endswith(os.sep):
                 return jasperdir

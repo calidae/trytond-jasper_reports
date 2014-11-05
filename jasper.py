@@ -6,9 +6,10 @@ import re
 import time
 import tempfile
 import logging
+from urlparse import urlparse
 
 from trytond.report import Report
-from trytond.config import CONFIG
+from trytond.config import config
 from trytond.pool import Pool
 from trytond.transaction import Transaction
 from trytond.cache import Cache
@@ -17,14 +18,14 @@ import JasperReports
 
 # Determines the port where the JasperServer process should listen with its
 # XML-RPC server for incomming calls
-CONFIG['jasperport'] = CONFIG.get('jasperport', 8090)
+PORT = config.getint('jasper', 'port', 8090)
 
 # Determines the file name where the process ID of the JasperServer
 # process should be stored
-CONFIG['jasperpid'] = CONFIG.get('jasperpid', 'tryton-jasper.pid')
+PID = config.get('jasper', 'pid', 'tryton-jasper.pid')
 
 # Determines if temporary files will be removed
-CONFIG['jasperunlink'] = CONFIG.get('jasperunlink', True)
+UNLINK = config.getboolean('jasper', 'unlink', True)
 
 
 class JasperReport(Report):
@@ -224,8 +225,8 @@ class JasperReport(Report):
 
         # Call the external java application that will generate the PDF
         # file in outputFile
-        server = JasperReports.JasperServer(int(CONFIG['jasperport']))
-        server.setPidFile(CONFIG['jasperpid'])
+        server = JasperReports.JasperServer(PORT)
+        server.setPidFile(PID)
         pages = server.execute(connectionParameters, report_path,
             outputFile, parameters)
         # End: report execution section
@@ -241,7 +242,7 @@ class JasperReport(Report):
             f.close()
 
         # Remove all temporary files created during the report
-        if CONFIG['jasperunlink']:
+        if UNLINK:
             for file in temporary_files:
                 try:
                     os.unlink(file)
@@ -257,18 +258,22 @@ class JasperReport(Report):
 
     @classmethod
     def dsn(cls):
-        host = CONFIG['db_host'] or 'localhost'
-        port = CONFIG['db_port'] or '5432'
+        uri = urlparse(config.get('database', 'uri'))
+        scheme = uri.schema or 'postgresql'
+        host = uri.hostname or 'localhost'
+        port = uri.port or 5432
         dbname = Transaction().cursor.dbname
-        return 'jdbc:postgresql://%s:%s/%s' % (host, port, dbname)
+        return 'jdbc:%s://%s:%s/%s' % (scheme, host, str(port), dbname)
 
     @classmethod
     def userName(cls):
-        return CONFIG['db_user'] or cls.systemUserName()
+        uri = urlparse(config.get('database', 'uri'))
+        return uri.username or cls.systemUserName()
 
     @classmethod
     def password(cls):
-        return CONFIG['db_password'] or ''
+        uri = urlparse(config.get('database', 'uri'))
+        return uri.password or ''
 
     @classmethod
     def systemUserName(cls):
