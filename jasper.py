@@ -259,7 +259,7 @@ class JasperReport(Report):
     @classmethod
     def dsn(cls):
         uri = urlparse(config.get('database', 'uri'))
-        scheme = uri.schema or 'postgresql'
+        scheme = uri.scheme or 'postgresql'
         host = uri.hostname or 'localhost'
         port = uri.port or 5432
         dbname = Transaction().cursor.dbname
