@@ -52,7 +52,8 @@ class JasperReport(Report):
     def get_report_file(cls, report, path=None):
         cache_path = cls._get_report_file_cache.get(report.id)
         if cache_path is not None:
-            if os.path.isfile(cache_path):
+            if (os.path.isfile(cache_path)
+                    and (not path or cache_path.startswith(path))):
                 return cache_path
 
         if not path:

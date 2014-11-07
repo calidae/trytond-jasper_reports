@@ -1,3 +1,6 @@
+* Invalidate subreport file cache if it is generated for another main report
+* Add support for subreports using same datasource
+
 Version 3.4.0 - 2014-11-05
 
 Version 3.2.0 - 2014-05-22
