@@ -1,7 +1,6 @@
 #This file is part jasper_reports module for Tryton.
 #The COPYRIGHT file at the top level of this repository contains
 #the full copyright notices and license terms.
-
 import os
 import glob
 import time
@@ -10,6 +9,7 @@ import subprocess
 import xmlrpclib
 import logging
 
+from trytond.config import config
 import trytond.error
 
 
@@ -42,10 +42,23 @@ class JasperServer(trytond.error.WarningErrorMixin):
             sep = ';'
         else:
             sep = ':'
+
         libs = os.path.join(self.path(), '..', 'java', 'lib', '*.jar')
-        env['CLASSPATH'] = os.path.join(self.path(), '..', 'java' + sep) + \
-            sep.join(glob.glob(libs)) + sep + \
-            os.path.join(self.path(), '..', 'custom_reports')
+
+        fonts_classpath = ""
+        for font_path in config.get('jasper', 'fonts_path', '').split(','):
+            font_path = font_path.strip()
+            if font_path.endswith('.jar'):
+                fonts_classpath += font_path + sep
+            else:
+                font_path = os.path.join(font_path, '*.jar')
+                fonts_classpath += sep.join(glob.glob(font_path))
+                if fonts_classpath and not fonts_classpath.endswith(':'):
+                    fonts_classpath += ':'
+
+        env['CLASSPATH'] = (os.path.join(self.path(), '..', 'java' + sep) +
+            sep.join(glob.glob(libs)) + sep + fonts_classpath +
+            os.path.join(self.path(), '..', 'custom_reports'))
         cwd = os.path.join(self.path(), '..', 'java')
 
         # Set headless = True because otherwise, java may use existing
