@@ -203,7 +203,7 @@ class ReportTranslationSet:
                     node.parentNode.tagName.endswith('Expression')):
                 return []
             if node.nodeValue:
-                node_strings = re.findall('tr *\([^\(]*,"([^"]*)"\)',
+                node_strings = re.findall('tr *\([^\(]*,[ ]*"([^"]*)"\)',
                 node.nodeValue)
                 strings += [x for x in node_strings if x]
 
