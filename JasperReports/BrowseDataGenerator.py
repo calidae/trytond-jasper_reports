@@ -164,6 +164,8 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
         # Process each "root" field only once by using a set.
         unrepeated = set([field.partition('/')[0] for field in fields])
         for field in unrepeated:
+            if not field:
+                continue
             root = field.partition('/')[0]
             if path:
                 currentPath = '%s/%s' % (path, root)
