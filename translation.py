@@ -38,159 +38,11 @@ class Translation:
             cls.type.selection = copy.copy(cls.type.selection)
             cls.type.selection.append(new_type)
 
-    @classmethod
-    def translation_import(cls, lang, module, po_path):
-        pool = Pool()
-        ModelData = pool.get('ir.model.data')
-        models_data = ModelData.search([
-                ('module', '=', module),
-                ])
-        fs_id2prop = {}
-        for model_data in models_data:
-            fs_id2prop.setdefault(model_data.model, {})
-            fs_id2prop[model_data.model][model_data.fs_id] = \
-                (model_data.db_id, model_data.noupdate)
-            for extra_model in cls.extra_model_data(model_data):
-                fs_id2prop.setdefault(extra_model, {})
-                fs_id2prop[extra_model][model_data.fs_id] = \
-                    (model_data.db_id, model_data.noupdate)
-
-        translations = set()
-        to_create = []
-        pofile = polib.pofile(po_path)
-
-        id2translation = {}
-        key2ids = {}
-        module_translations = cls.search([
-                ('lang', '=', lang),
-                ('module', '=', module),
-                ], order=[])
-        for translation in module_translations:
-            if translation.type in ('odt', 'view', 'wizard_button',
-                    'selection', 'error', 'jasper'):
-                key = (translation.name, translation.res_id, translation.type,
-                    translation.src)
-            elif translation.type in ('field', 'model', 'help'):
-                key = (translation.name, translation.res_id, translation.type)
-            else:
-                raise Exception('Unknow translation type: %s'
-                    % translation.type)
-            key2ids.setdefault(key, []).append(translation.id)
-            if len(module_translations) <= RECORD_CACHE_SIZE:
-                id2translation[translation.id] = translation
-
-        def override_translation(ressource_id, new_translation, fuzzy):
-            res_id_module, res_id = ressource_id.split('.')
-            if res_id:
-                model_data, = ModelData.search([
-                        ('module', '=', res_id_module),
-                        ('fs_id', '=', res_id),
-                        ])
-                res_id = model_data.db_id
-            else:
-                res_id = -1
-            with contextlib.nested(Transaction().set_user(0),
-                    Transaction().set_context(module=res_id_module)):
-                translation, = cls.search([
-                        ('name', '=', name),
-                        ('res_id', '=', res_id),
-                        ('lang', '=', lang),
-                        ('type', '=', ttype),
-                        ('module', '=', res_id_module),
-                        ])
-                if translation.value != new_translation:
-                    translation.value = new_translation
-                    translation.overriding_module = module
-                    translation.fuzzy = fuzzy
-                    translation.save()
-
-        # Make a first loop to retreive translation ids in the right order to
-        # get better read locality and a full usage of the cache.
-        translation_ids = []
-        if len(module_translations) <= RECORD_CACHE_SIZE:
-            processes = (True,)
-        else:
-            processes = (False, True)
-        for processing in processes:
-            if processing and len(module_translations) > RECORD_CACHE_SIZE:
-                id2translation = dict((t.id, t)
-                    for t in cls.browse(translation_ids))
-            for entry in pofile:
-                ttype, name, res_id = entry.msgctxt.split(':')
-                src = entry.msgid
-                value = entry.msgstr
-                fuzzy = 'fuzzy' in entry.flags
-                noupdate = False
-
-                if '.' in res_id:
-                    override_translation(res_id, value, fuzzy)
-                    continue
-
-                model = name.split(',')[0]
-                if (model in fs_id2prop
-                        and res_id in fs_id2prop[model]):
-                    res_id, noupdate = fs_id2prop[model][res_id]
-
-                if res_id:
-                    try:
-                        res_id = int(res_id)
-                    except ValueError:
-                        continue
-                if not res_id:
-                    res_id = -1
-
-                if ttype in ('odt', 'view', 'wizard_button', 'selection',
-                        'error', 'jasper'):
-                    key = (name, res_id, ttype, src)
-                elif ttype in('field', 'model', 'help'):
-                    key = (name, res_id, ttype)
-                else:
-                    raise Exception('Unknow translation type: %s' % ttype)
-                ids = key2ids.get(key, [])
-
-                if not processing:
-                    translation_ids.extend(ids)
-                    continue
-
-                with contextlib.nested(Transaction().set_user(0),
-                        Transaction().set_context(module=module)):
-                    if not ids:
-                        to_create.append({
-                            'name': name,
-                            'res_id': res_id,
-                            'lang': lang,
-                            'type': ttype,
-                            'src': src,
-                            'value': value,
-                            'fuzzy': fuzzy,
-                            'module': module,
-                            'overriding_module': None,
-                            })
-                    else:
-                        translations2 = []
-                        for translation_id in ids:
-                            translation = id2translation[translation_id]
-                            if translation.value != value \
-                                    or translation.fuzzy != fuzzy:
-                                translations2.append(translation)
-                        if translations2 and not noupdate:
-                            cls.write(translations2, {
-                                'value': value,
-                                'fuzzy': fuzzy,
-                                })
-                        translations |= set(cls.browse(ids))
-
-        if to_create:
-            translations |= set(cls.create(to_create))
-
-        if translations:
-            all_translations = set(cls.search([
-                        ('module', '=', module),
-                        ('lang', '=', lang),
-                        ]))
-            translations_to_delete = all_translations - translations
-            cls.delete(list(translations_to_delete))
-        return len(translations)
+    @property
+    def unique_key(self):
+        if self.type == 'jasper':
+            return (self.name, self.type, self.src)
+        return super(Translation, self).unique_key
 
 
 class ReportTranslationSet:
@@ -214,6 +66,7 @@ class ReportTranslationSet:
     def _store_report_strings(self, report, strings, type_):
         Translation = Pool().get('ir.translation')
         cursor = Transaction().cursor
+        translation = Translation.__table__()
 
         translations = Translation.search([
                 ('lang', '=', 'en_US'),
@@ -241,16 +94,14 @@ class ReportTranslationSet:
                     done = True
                     break
                 if seqmatch.ratio() > 0.6:
-                    cursor.execute('UPDATE ir_translation '
-                            'SET src = %s, '
-                                'fuzzy = %s, '
-                                'src_md5 = %s '
-                            'WHERE name = %s '
-                                'AND type = %s '
-                                'AND src = %s '
-                                'AND module = %s',
-                            (string, True, src_md5, report.report_name,
-                                type_, string_trans, report.module))
+                    cursor.execute(*translation.update(
+                            [translation.src, translation.fuzzy,
+                                translation.src_md5],
+                            [string, True, src_md5],
+                            where=(translation.name == report.report_name)
+                            & (translation.type == type_)
+                            & (translation.src == string_trans)
+                            & (translation.module == report.module)))
                     del trans_reports[string_trans]
                     done = True
                     break
@@ -265,16 +116,11 @@ class ReportTranslationSet:
         if to_create:
             Translation.create(to_create)
         if strings:
-            cursor.execute('DELETE FROM ir_translation '
-                    'WHERE name = %s '
-                        'AND type = %s '
-                        'AND module = %s '
-                        'AND src NOT IN '
-                        '(' + ','.join(('%s',) * len(strings)) + ')', (
-                                report.report_name,
-                                type_,
-                                report.module
-                                ) + tuple(strings))
+            cursor.execute(*translation.delete(
+                    where=(translation.name == report.report_name)
+                    & (translation.type == type_)
+                    & (translation.module == report.module)
+                    & ~translation.src.in_(strings)))
 
     def set_report(self):
         pool = Pool()
@@ -308,35 +154,11 @@ class ReportTranslationSet:
 class TranslationUpdate:
     __name__ = "ir.translation.update"
 
-    def do_update(self, action):
-        pool = Pool()
-        Translation = pool.get('ir.translation')
-
-        cursor = Transaction().cursor
-        lang = self.start.language.code
-        cursor.execute("SELECT name, res_id, type, src, module "
-            "FROM ir_translation "
-            "WHERE lang = 'en_US' "
-                "AND type = 'jasper' "
-            "EXCEPT SELECT name, res_id, type, src, module "
-            "FROM ir_translation "
-            "WHERE lang=%s "
-                "AND type = 'jasper'",
-            (lang,))
-        to_create = []
-        for row in cursor.dictfetchall():
-            to_create.append({
-                    'name': row['name'],
-                    'res_id': row['res_id'],
-                    'lang': lang,
-                    'type': row['type'],
-                    'src': row['src'],
-                    'module': row['module'],
-                    })
-        if to_create:
-            with Transaction().set_user(0):
-                Translation.create(to_create)
-        return super(TranslationUpdate, self).do_update(action)
+    @classmethod
+    def __setup__(cls):
+        super(TranslationUpdate, cls).__setup__()
+        if 'jasper' not in cls._source_types:
+            cls._source_types.append('jasper')
 
 
 class TranslationClean(Wizard):
@@ -348,6 +170,7 @@ class TranslationClean(Wizard):
         pool = Pool()
         Report = pool.get('ir.action.report')
         with Transaction().set_context(active_test=False):
+            # TODO: Clean strings that no more exists in the report?
             if not Report.search([
                         ('report_name', '=', translation.name),
                         ]):
