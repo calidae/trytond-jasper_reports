@@ -46,7 +46,7 @@ class JasperServer(trytond.error.WarningErrorMixin):
         libs = os.path.join(self.path(), '..', 'java', 'lib', '*.jar')
 
         fonts_classpath = ""
-        for font_path in config.get('jasper', 'fonts_path', '').split(','):
+        for font_path in config.get('jasper', 'fonts_path', default='').split(','):
             font_path = font_path.strip()
             if font_path.endswith('.jar'):
                 fonts_classpath += font_path + sep

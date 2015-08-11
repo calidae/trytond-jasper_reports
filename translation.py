@@ -5,15 +5,11 @@ from xml import dom
 import copy
 import os
 import re
-import polib
-import contextlib
 
-from trytond.model import ModelView, ModelSQL
 from trytond.wizard import Wizard
 from trytond.transaction import Transaction
 from trytond.pool import Pool, PoolMeta
 from trytond.tools import file_open
-from trytond.const import RECORD_CACHE_SIZE
 from difflib import SequenceMatcher
 
 __all__ = [

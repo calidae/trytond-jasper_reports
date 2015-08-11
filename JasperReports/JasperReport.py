@@ -5,7 +5,7 @@
 import os
 from lxml import etree
 import re
-from trytond.tools import safe_eval
+from simpleeval import simple_eval
 from trytond.config import config
 
 dataSourceExpressionRegExp = re.compile(r"""\$P\{(\w+)\}""")
@@ -125,10 +125,7 @@ class JasperReport:
             namespaces=nss)
         if relationTags and 'value' in relationTags[0].keys():
             relation = relationTags[0].get('value').strip()
-            if relation.startswith('['):
-                self._relations = safe_eval(relationTags[0].get('value'), {})
-            else:
-                self._relations = [x.strip() for x in relation.split(',')]
+            self._relations = [x.strip() for x in relation.split(',')]
             self._relations = [self._pathPrefix + x for x in self._relations]
         if not self._relations and self._pathPrefix:
             self._relations = [self._pathPrefix[:-1]]
@@ -171,7 +168,7 @@ class JasperReport:
             subreportExpression = subreportExpression.replace(
                 '$P{SUBREPORT_DIR}', '"%s"' % self.subreportDirectory())
             try:
-                subreportExpression = safe_eval(subreportExpression, {})
+                subreportExpression = simple_eval(subreportExpression, {})
             except:
                 print "COULD NOT EVALUATE EXPRESSION: '%s'" % (
                     subreportExpression)
@@ -270,10 +267,7 @@ class JasperReport:
 
             if relationTags and 'value' in relationTags[0].keys():
                 relation = relationTags[0].get('value').strip()
-                if relation.startswith('['):
-                    relations = safe_eval(relationTags[0].get('value'), {})
-                else:
-                    relations = [x.strip() for x in relation.split(',')]
+                relations = [x.strip() for x in relation.split(',')]
                 relations = [self._pathPrefix + x for x in relations]
             if not relations and self._pathPrefix:
                 relations = [self._pathPrefix[:-1]]

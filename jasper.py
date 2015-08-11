@@ -18,14 +18,14 @@ import JasperReports
 
 # Determines the port where the JasperServer process should listen with its
 # XML-RPC server for incomming calls
-PORT = config.getint('jasper', 'port', 8090)
+PORT = config.getint('jasper', 'port', default=8090)
 
 # Determines the file name where the process ID of the JasperServer
 # process should be stored
-PID = config.get('jasper', 'pid', 'tryton-jasper.pid')
+PID = config.get('jasper', 'pid', default='tryton-jasper.pid')
 
 # Determines if temporary files will be removed
-UNLINK = config.getboolean('jasper', 'unlink', True)
+UNLINK = config.getboolean('jasper', 'unlink', default=True)
 
 
 class JasperReport(Report):
@@ -251,10 +251,10 @@ class JasperReport(Report):
                     logger.warning("Could not remove file '%s'." % file)
 
         if Transaction().context.get('return_pages'):
-            return (output_format, buffer(file_data),
+            return (output_format, bytearray(file_data),
                 report_action.direct_print, report_action.name, pages)
 
-        return (output_format, buffer(file_data), report_action.direct_print,
+        return (output_format, bytearray(file_data), report_action.direct_print,
             report_action.name)
 
     @classmethod
