@@ -9,7 +9,7 @@ import logging
 from urlparse import urlparse
 
 from trytond.report import Report
-from trytond.config import config
+from trytond.config import config as config_
 from trytond.pool import Pool
 from trytond.transaction import Transaction
 from trytond.cache import Cache
@@ -18,14 +18,14 @@ import JasperReports
 
 # Determines the port where the JasperServer process should listen with its
 # XML-RPC server for incomming calls
-PORT = config.getint('jasper', 'port', default=8090)
+PORT = config_.getint('jasper', 'port', default=8090)
 
 # Determines the file name where the process ID of the JasperServer
 # process should be stored
-PID = config.get('jasper', 'pid', default='tryton-jasper.pid')
+PID = config_.get('jasper', 'pid', default='tryton-jasper.pid')
 
 # Determines if temporary files will be removed
-UNLINK = config.getboolean('jasper', 'unlink', default=True)
+UNLINK = config_.getboolean('jasper', 'unlink', default=True)
 
 
 class JasperReport(Report):
@@ -259,7 +259,7 @@ class JasperReport(Report):
 
     @classmethod
     def dsn(cls):
-        uri = urlparse(config.get('database', 'uri'))
+        uri = urlparse(config_.get('database', 'uri'))
         scheme = uri.scheme or 'postgresql'
         host = uri.hostname or 'localhost'
         port = uri.port or 5432
@@ -268,12 +268,12 @@ class JasperReport(Report):
 
     @classmethod
     def userName(cls):
-        uri = urlparse(config.get('database', 'uri'))
+        uri = urlparse(config_.get('database', 'uri'))
         return uri.username or cls.systemUserName()
 
     @classmethod
     def password(cls):
-        uri = urlparse(config.get('database', 'uri'))
+        uri = urlparse(config_.get('database', 'uri'))
         return uri.password or ''
 
     @classmethod
