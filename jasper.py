@@ -27,6 +27,8 @@ PID = config_.get('jasper', 'pid', default='tryton-jasper.pid')
 # Determines if temporary files will be removed
 UNLINK = config_.getboolean('jasper', 'unlink', default=True)
 
+logger = logging.getLogger(__name__)
+
 
 class JasperReport(Report):
     _get_report_file_cache = Cache('jasper_report.report_file')
@@ -128,7 +130,6 @@ class JasperReport(Report):
     def execute(cls, ids, data):
         pool = Pool()
         ActionReport = pool.get('ir.action.report')
-        logger = logging.getLogger('jasper_reports')
 
         report_actions = ActionReport.search([
                 ('report_name', '=', cls.__name__)
