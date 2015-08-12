@@ -53,7 +53,7 @@ class Model:
         topNode.appendChild(recordNode)
         IrModel.get_jreport_xml(model, recordNode, document, depth)
         file_data = topNode.toxml()
-        return buffer(file_data)
+        return bytes(file_data)
 
     @staticmethod
     def get_jreport_xml(model, parentNode, document, depth=1, first_call=True):
