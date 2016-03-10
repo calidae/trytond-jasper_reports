@@ -61,7 +61,7 @@ class ReportTranslationSet:
 
     def _store_report_strings(self, report, strings, type_):
         Translation = Pool().get('ir.translation')
-        cursor = Transaction().cursor
+        cursor = Transaction().connection.cursor()
         translation = Translation.__table__()
 
         translations = Translation.search([
