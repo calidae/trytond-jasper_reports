@@ -19,10 +19,9 @@ __all__ = [
     'TranslationClean',
     ]
 
-__metaclass__ = PoolMeta
-
 
 class Translation:
+    __metaclass__ = PoolMeta
     __name__ = 'ir.translation'
 
     @classmethod
@@ -42,6 +41,7 @@ class Translation:
 
 
 class ReportTranslationSet:
+    __metaclass__ = PoolMeta
     __name__ = "ir.translation.set"
 
     def _translate_jasper_report(self, node):
@@ -148,6 +148,7 @@ class ReportTranslationSet:
 
 
 class TranslationUpdate:
+    __metaclass__ = PoolMeta
     __name__ = "ir.translation.update"
 
     @classmethod

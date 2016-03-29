@@ -7,7 +7,6 @@ from xml.dom.minidom import getDOMImplementation
 import unicodedata
 
 __all__ = ['Model']
-__metaclass__ = PoolMeta
 
 src_chars = """ '"()/*-+?Â¿!&$[]{}@#`'^:;<>=~%,\\"""
 src_chars = unicode(src_chars, 'iso-8859-1')
@@ -16,7 +15,7 @@ dst_chars = unicode(dst_chars, 'iso-8859-1')
 
 
 class Model:
-    "Model"
+    __metaclass__ = PoolMeta
     __name__ = 'ir.model'
 
     @staticmethod
