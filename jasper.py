@@ -7,10 +7,7 @@ import time
 import tempfile
 import logging
 import subprocess
-try:
-    import cStringIO as StringIO
-except ImportError:
-    import StringIO
+from io import StringIO
 from urlparse import urlparse
 from PyPDF2 import PdfFileMerger, PdfFileReader, PdfFileWriter
 
@@ -330,7 +327,7 @@ class JasperReport(Report):
     def merge_pdfs(cls, pdfs_data):
         merger = PdfFileMerger()
         for pdf_data in pdfs_data:
-            tmppdf = StringIO.StringIO(pdf_data)
+            tmppdf = StringIO(pdf_data)
             merger.append(PdfFileReader(tmppdf))
             tmppdf.close()
 
@@ -357,7 +354,7 @@ class JasperReport(Report):
             finally:
                 f.close()
         else:
-            tmppdf = StringIO.StringIO()
+            tmppdf = StringIO()
             merger.write(tmppdf)
             pdf_data = tmppdf.getvalue()
             merger.close()
