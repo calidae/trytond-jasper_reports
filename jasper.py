@@ -7,7 +7,7 @@ import time
 import tempfile
 import logging
 import subprocess
-from io import StringIO
+from io import BytesIO
 from urlparse import urlparse
 from PyPDF2 import PdfFileMerger, PdfFileReader, PdfFileWriter
 
@@ -327,7 +327,7 @@ class JasperReport(Report):
     def merge_pdfs(cls, pdfs_data):
         merger = PdfFileMerger()
         for pdf_data in pdfs_data:
-            tmppdf = StringIO(pdf_data)
+            tmppdf = BytesIO(pdf_data)
             merger.append(PdfFileReader(tmppdf))
             tmppdf.close()
 
@@ -342,11 +342,10 @@ class JasperReport(Report):
             merged.close()
 
             compacted_path = os.path.join(path, 'compacted.pdf')
-            output = os.path.join(path, 'compacted.pdf')
             command = ['gs', '-q', '-dBATCH', '-dNOPAUSE', '-dSAFER',
                 '-sDEVICE=pdfwrite', '-dPDFSETTINGS=/printer',
                 '-sOutputFile=%s' % compacted_path, merged_path]
-            process = subprocess.call(command)
+            subprocess.call(command)
 
             f = open(compacted_path, 'r')
             try:
@@ -354,7 +353,7 @@ class JasperReport(Report):
             finally:
                 f.close()
         else:
-            tmppdf = StringIO()
+            tmppdf = BytesIO()
             merger.write(tmppdf)
             pdf_data = tmppdf.getvalue()
             merger.close()
