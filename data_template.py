@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
-#This file is part of jasper_reports module for Tryton.
-#The COPYRIGHT file at the top level of this repository contains
-#the full copyright notices and license terms.
+# This file is part of jasper_reports module for Tryton.
+# The COPYRIGHT file at the top level of this repository contains
+# the full copyright notices and license terms.
 from trytond.model import ModelView, fields
 from trytond.pool import Pool
 from trytond.wizard import Wizard, StateView, StateTransition, Button
@@ -25,6 +25,7 @@ class DataTemplateResult(ModelView):
     __name__ = 'jasper_reports.data_template.result'
     file = fields.Binary('File', readonly=True)
     depth = fields.Integer('Depth', required=True)
+
 
 class DataTemplate(Wizard):
     'Data Template'

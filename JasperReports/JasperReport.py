@@ -1,6 +1,6 @@
-#This file is part jasper_reports module for Tryton.
-#The COPYRIGHT file at the top level of this repository contains
-#the full copyright notices and license terms.
+# This file is part jasper_reports module for Tryton.
+# The COPYRIGHT file at the top level of this repository contains
+# the full copyright notices and license terms.
 
 import os
 from lxml import etree
@@ -70,7 +70,6 @@ class JasperReport:
         # fields and fieldNames
         fields = {}
         fieldNames = []
-        #fieldTags = doc.xpath( '/jr:jasperReport/jr:field', namespaces=nss )
         for tag in fieldTags:
             name = tag.get('name')
             type = tag.get('class')
@@ -89,11 +88,10 @@ class JasperReport:
             path = '/'.join(newPath)
             if path in fields:
                 print "WARNING: path '%s' already exists in report. This is " \
-                 "not supported by the module. Offending fields: %s, %s" % (
-                     path,
-                     fields[path]['name'],
-                     name
-                     )
+                    "not supported by the module. Offending fields: %s, %s" % (
+                        path,
+                        fields[path]['name'],
+                        name)
             fields[path] = {
                 'name': name,
                 'type': type,
@@ -137,7 +135,8 @@ class JasperReport:
             '/jr:jasperReport/jr:property[@name="TRYTON_COPIES_FIELD"]',
             namespaces=nss)
         if copiesFieldTags and 'value' in copiesFieldTags[0].keys():
-            self._copiesField = self._pathPrefix + copiesFieldTags[0].get('value')
+            self._copiesField = self._pathPrefix + copiesFieldTags[0].get(
+                'value')
 
         self._isHeader = False
         headerTags = doc.xpath(
@@ -153,11 +152,13 @@ class JasperReport:
 
         # Subreports
         # Here we expect the following structure in the .jrxml file:
-        #<subreport>
-        #  <dataSourceExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></dataSourceExpression>
-        #  <subreportExpression class="java.lang.String"><![CDATA[$P{STANDARD_DIR} +
-        # "report_header.jasper"]]></subreportExpression>
-        #</subreport>
+        # <subreport>
+        #   <dataSourceExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]>
+        #   </dataSourceExpression>
+        #      <subreportExpression class="java.lang.String">
+        #           <![CDATA[$P{STANDARD_DIR} + "report_header.jasper"]]>
+        #       </subreportExpression>
+        # </subreport>
         subreportTags = doc.xpath('//jr:subreport', namespaces=nss)
         for tag in subreportTags:
             subreportExpression = tag.findtext(
@@ -233,9 +234,9 @@ class JasperReport:
 
         # Dataset
         # Here we expect the following structure in the .jrxml file:
-        #<datasetRun>
+        # <datasetRun>
         #  <dataSourceExpression><![CDATA[$P{REPORT_DATA_SOURCE}]]></dataSourceExpression>
-        #</datasetRun>
+        # </datasetRun>
         datasetTags = doc.xpath(
             '//jr:datasetRun',
             namespaces=nss)
@@ -260,7 +261,7 @@ class JasperReport:
             relationTags = tag.xpath(
                 '../../jr:reportElement/jr:property[@name="TRYTON_RELATIONS"]',
                 namespaces=nss)
-            #Add suport for crosstabs. (reportElement is one level upper)
+            # Add suport for crosstabs. (reportElement is one level upper)
             if not relationTags:
                 relationTags = tag.xpath(
                     '../../../jr:reportElement/jr:property'
@@ -283,7 +284,8 @@ class JasperReport:
                 '../../jr:reportElement/jr:property[@name="TRYTON_COPIES_FIELD"]',
                 namespaces=nss)
             if copiesFieldTags and 'value' in copiesFieldTags[0].keys():
-                copiesField = self._pathPrefix + copiesFieldTags[0].get('value')
+                copiesField = self._pathPrefix + copiesFieldTags[0].get(
+                    'value')
 
             # Model
             model = ''

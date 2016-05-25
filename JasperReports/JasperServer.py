@@ -1,6 +1,6 @@
-#This file is part jasper_reports module for Tryton.
-#The COPYRIGHT file at the top level of this repository contains
-#the full copyright notices and license terms.
+# This file is part jasper_reports module for Tryton.
+# The COPYRIGHT file at the top level of this repository contains
+# the full copyright notices and license terms.
 import os
 import glob
 import time
@@ -45,8 +45,8 @@ class JasperServer(trytond.error.WarningErrorMixin):
 
         libs = os.path.join(self.path(), '..', 'java', 'lib', '*.jar')
 
-        fonts_classpath = ""
-        for font_path in config.get('jasper', 'fonts_path', default='').split(','):
+        fonts_classpath = config.get('jasper', 'fonts_path', default='')
+        for font_path in fonts_classpath.split(','):
             font_path = font_path.strip()
             if font_path.endswith('.jar'):
                 fonts_classpath += font_path + sep

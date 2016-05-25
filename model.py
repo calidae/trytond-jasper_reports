@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-#This file is part jasper_reports module for Tryton.
-#The COPYRIGHT file at the top level of this repository contains
-#the full copyright notices and license terms.
+# This file is part jasper_reports module for Tryton.
+# The COPYRIGHT file at the top level of this repository contains
+# the full copyright notices and license terms.
 from trytond.pool import Pool, PoolMeta
 from xml.dom.minidom import getDOMImplementation
 import unicodedata
@@ -91,12 +91,7 @@ class Model:
                     depth - 1, False)
                 continue
 
-        # TODO
-        #~ if depth > 1 and modelName != 'Attachments':
-            #~ # Create relation with attachments
-            #~ fieldNode = document.createElement( '%s-Attachments' % _('Attachments') )
-            #~ parentNode.appendChild( fieldNode )
-            #~ self.generate_xml(cr, uid, context, pool, 'ir.attachment', fieldNode, document, depth-1, False)
+        # TODO: Create relation with attachments
 
         if first_call:
             # Create relation with user

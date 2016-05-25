@@ -1,6 +1,6 @@
-#This file is part jasper_reports module for Tryton.
-#The COPYRIGHT file at the top level of this repository contains
-#the full copyright notices and license terms.
+# This file is part jasper_reports module for Tryton.
+# The COPYRIGHT file at the top level of this repository contains
+# the full copyright notices and license terms.
 import os
 import re
 import time
@@ -35,7 +35,8 @@ UNLINK = config_.getboolean('jasper', 'unlink', default=True)
 USE_CACHE = config_.getboolean('jasper', 'use_cache', default=True)
 
 # Determines if on merge, resulting PDF should be compacted using ghostscript
-COMPACT_ON_MERGE = config_.getboolean('jasper', 'compact_on_merge', default=False)
+COMPACT_ON_MERGE = config_.getboolean('jasper', 'compact_on_merge',
+    default=False)
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +55,6 @@ class JasperReport(Report):
             text += u'%s=%s\n' % (key, value)
         import codecs
         f = codecs.open(filename, 'w', 'latin1')
-        #f = open(filename, 'w')
         try:
             f.write(text)
         finally:
@@ -125,7 +125,6 @@ class JasperReport(Report):
                     pfile = os.path.join(path, '%s_%s.properties' % (
                             basename, lang.lower()))
                     cls.write_properties(pfile, p)
-                    #p.store(open(pfile, 'w'))
                 lang = translation.lang
             if translation.src is None or translation.value is None:
                 continue

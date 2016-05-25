@@ -1,6 +1,6 @@
-#This file is part jasper_reports module for Tryton.
-#The COPYRIGHT file at the top level of this repository contains
-#the full copyright notices and license terms.
+# This file is part jasper_reports module for Tryton.
+# The COPYRIGHT file at the top level of this repository contains
+# the full copyright notices and license terms.
 
 import csv
 from xml.dom.minidom import getDOMImplementation
@@ -35,7 +35,7 @@ class CsvRecordDataGenerator(AbstractDataGenerator):
                 row = {}
                 for field in record:
                     if field not in self.report.fields():
-                        if not field in error_reported_fields:
+                        if field not in error_reported_fields:
                             print "FIELD '%s' NOT FOUND IN REPORT." % field
                             error_reported_fields.append(field)
                         continue
@@ -59,6 +59,7 @@ class XmlRecordDataGenerator(AbstractDataGenerator):
     XML file generation using a list of dictionaries provided by the parser
     function.
     """
+
     def generate(self, fileName):
         # Once all records have been calculated, create the XML structure
         # itself
