@@ -2,16 +2,19 @@
 # This file is part jasper_reports module for Tryton.
 # The COPYRIGHT file at the top level of this repository contains
 # the full copyright notices and license terms.
-from trytond.pool import Pool, PoolMeta
-from xml.dom.minidom import getDOMImplementation
+import sys
 import unicodedata
+from xml.dom.minidom import getDOMImplementation
+
+from trytond.pool import Pool, PoolMeta
 
 __all__ = ['Model']
 
 src_chars = """ '"()/*-+?Â¿!&$[]{}@#`'^:;<>=~%,\\"""
-src_chars = unicode(src_chars, 'iso-8859-1')
 dst_chars = """________________________________"""
-dst_chars = unicode(dst_chars, 'iso-8859-1')
+if sys.version_info < (3, 0, 0):
+    src_chars = unicode(src_chars, 'iso-8859-1')
+    dst_chars = unicode(dst_chars, 'iso-8859-1')
 
 
 class Model:
