@@ -65,7 +65,7 @@ class ReportTranslationSet:
         translation = Translation.__table__()
 
         translations = Translation.search([
-                ('lang', '=', 'en_US'),
+                ('lang', '=', 'en'),
                 ('type', '=', type_),
                 ('name', '=', report.report_name),
                 ('module', '=', report.module or ''),
@@ -104,7 +104,7 @@ class ReportTranslationSet:
             if not done:
                 to_create.append({
                         'name': report.report_name,
-                        'lang': 'en_US',
+                        'lang': 'en',
                         'type': type_,
                         'src': string,
                         'module': report.module,
