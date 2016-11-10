@@ -12,7 +12,7 @@ msgstr "Archivo"
 
 msgctxt "field:jasper_reports.data_template.result,id:"
 msgid "ID"
-msgstr "ID"
+msgstr "Identificador"
 
 msgctxt "field:jasper_reports.data_template.start,depth:"
 msgid "Depth"
@@ -20,7 +20,7 @@ msgstr "Profundidad"
 
 msgctxt "field:jasper_reports.data_template.start,id:"
 msgid "ID"
-msgstr "ID"
+msgstr "Identificador"
 
 msgctxt "field:jasper_reports.data_template.start,model:"
 msgid "Model"
