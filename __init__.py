@@ -1,24 +1,24 @@
 #This file is part jasper_reports module for Tryton.
 #The COPYRIGHT file at the top level of this repository contains
 #the full copyright notices and license terms.
-
 from trytond.pool import Pool
-from .data_template import *
-from .model import *
-from .translation import *
+from . import data_template
+from . import action
+from . import model
+from . import translation
 
 
 def register():
     Pool.register(
-        DataTemplateStart,
-        DataTemplateResult,
-        Model,
-        Translation,
+        data_template.DataTemplateStart,
+        data_template.DataTemplateResult,
+        action.ActionReport,
+        model.Model,
+        translation.Translation,
         module='jasper_reports', type_='model')
     Pool.register(
-        DataTemplate,
-        ReportTranslationSet,
-        TranslationUpdate,
-        TranslationClean,
+        data_template.DataTemplate,
+        translation.ReportTranslationSet,
+        translation.TranslationUpdate,
+        translation.TranslationClean,
         module='jasper_reports', type_='wizard')
-

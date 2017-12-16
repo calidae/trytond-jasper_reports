@@ -44,6 +44,11 @@ class ReportTranslationSet:
     __metaclass__ = PoolMeta
     __name__ = "ir.translation.set"
 
+    def extract_report_jrxml(self, content):
+        # TODO
+        strings = set()
+        return strings
+
     def _translate_jasper_report(self, node):
         strings = []
         if node.nodeType in (node.CDATA_SECTION_NODE, node.TEXT_NODE):
