@@ -2,57 +2,19 @@
 # This file is part jasper_reports module for Tryton.
 # The COPYRIGHT file at the top level of this repository contains
 # the full copyright notices and license terms.
-from __future__ import print_function
 
 from setuptools import setup
-from setuptools.command.install import install
 import re
 import os
 import io
-import shutil
-try:
-    from urllib2 import urlopen
-except ImportError:
-    from urllib.request import urlopen
-import tempfile
-from zipfile import ZipFile
 try:
     from configparser import ConfigParser
 except ImportError:
     from ConfigParser import ConfigParser
 
+MODULE = 'jasper_reports'
+PREFIX = 'trytonspain'
 MODULE2PREFIX = {}
-
-download_url = 'https://bitbucket.org/trytonspain/trytond-jasper_reports'
-
-
-def download_java_files(target_dir):
-    if target_dir[:7] == '/build/':
-        raise NotImplementedError('Wheel building is not impelmented')
-    java_dir = os.path.join(target_dir, 'java')
-    print('installing java files')
-    if os.path.exists(java_dir):
-        return
-    print('downloading java files')
-    url = download_url + '/get/default.zip'
-    zipfile = ZipFile(io.BytesIO(urlopen(url).read()))
-    tempdir = tempfile.mkdtemp()
-    print('copy java files')
-    zipfile.extractall(tempdir)
-    zipdir = os.path.join(tempdir, os.listdir(tempdir)[0])
-    shutil.copytree(os.path.join(zipdir, 'java'), java_dir)
-    print('cleaning temporal files')
-    shutil.rmtree(tempdir)
-
-
-class JasperInstall(install):
-    'Install package and download java files'
-
-    def run(self):
-        install.run(self)
-        target_dir = os.sep + os.path.join(*self.get_outputs()[0].split(
-                os.sep)[:-1])
-        download_java_files(target_dir)
 
 
 def read(fname):
@@ -80,43 +42,36 @@ version = info.get('version', '0.0.1')
 major_version, minor_version, _ = version.split('.', 2)
 major_version = int(major_version)
 minor_version = int(minor_version)
-name = 'trytonspain_jasper_reports'
 
-requires = ['PyPDF2']
+requires = []
 for dep in info.get('depends', []):
     if not re.match(r'(ir|res)(\W|$)', dep):
         prefix = MODULE2PREFIX.get(dep, 'trytond')
         requires.append(get_require_version('%s_%s' % (prefix, dep)))
 requires.append(get_require_version('trytond'))
 
-tests_require = []
+tests_require = [get_require_version('proteus')]
 dependency_links = []
 if minor_version % 2:
     # Add development index for testing with proteus
     dependency_links.append('https://trydevpi.tryton.org/')
 
-setup(name=name,
+setup(name='%s_%s' % (PREFIX, MODULE),
     version=version,
-    description='Tryton Jasper Reports Module',
+    description='Tryton jasper_reports Module',
     long_description=read('README'),
     author='TrytonSpain',
     author_email='info@trytonspain.com',
     url='https://bitbucket.org/trytonspain/',
-    download_url=download_url,
+    download_url="https://bitbucket.org/trytonspain/trytond-%s" % MODULE,
     keywords='',
-    # Required in order to download java files as they are not uploaded to
-    # PyPI because there is a limit of 60MB
-    cmdclass={
-        'install': JasperInstall,
-        },
-    package_dir={'trytond.modules.jasper_reports': '.'},
+    package_dir={'trytond.modules.%s' % MODULE: '.'},
     packages=[
-        'trytond.modules.jasper_reports',
-        'trytond.modules.jasper_reports.JasperReports',
-        'trytond.modules.jasper_reports.tests',
+        'trytond.modules.%s' % MODULE,
+        'trytond.modules.%s.tests' % MODULE,
         ],
     package_data={
-        'trytond.modules.jasper_reports': (info.get('xml', [])
+        'trytond.modules.%s' % MODULE: (info.get('xml', [])
             + ['tryton.cfg', 'view/*.xml', 'locale/*.po', '*.odt',
                 'icons/*.svg', 'tests/*.rst']),
         },
@@ -143,9 +98,9 @@ setup(name=name,
         'Natural Language :: Spanish',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Office/Business',
@@ -156,10 +111,13 @@ setup(name=name,
     zip_safe=False,
     entry_points="""
     [trytond.modules]
-    jasper_reports = trytond.modules.jasper_reports
-    """,
+    %s = trytond.modules.%s
+    """ % (MODULE, MODULE),
     test_suite='tests',
     test_loader='trytond.test_loader:Loader',
     tests_require=tests_require,
     use_2to3=True,
+    convert_2to3_doctests=[
+        'tests/scenario_jasper_reports.rst',
+        ],
     )
