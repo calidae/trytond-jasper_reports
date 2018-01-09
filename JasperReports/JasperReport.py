@@ -281,7 +281,8 @@ class JasperReport:
             # Repeat field
             copiesField = None
             copiesFieldTags = tag.xpath(
-                '../../jr:reportElement/jr:property[@name="TRYTON_COPIES_FIELD"]',
+                '../../jr:reportElement/'
+                'jr:property[@name="TRYTON_COPIES_FIELD"]',
                 namespaces=nss)
             if copiesFieldTags and 'value' in copiesFieldTags[0].keys():
                 copiesField = self._pathPrefix + copiesFieldTags[0].get(
@@ -297,7 +298,8 @@ class JasperReport:
 
             pathPrefix = ''
             pathPrefixTags = tag.xpath(
-                '../../jr:reportElement/jr:property[@name="TRYTON_PATH_PREFIX"]',
+                '../../jr:reportElement/'
+                'jr:property[@name="TRYTON_PATH_PREFIX"]',
                 namespaces=nss)
             if pathPrefixTags and 'value' in pathPrefixTags[0].keys():
                 pathPrefix = pathPrefixTags[0].get('value')

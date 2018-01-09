@@ -146,7 +146,8 @@ class ReportTranslationSet:
             for content in (report.report_content_custom, jasper_content):
                 if not content:
                     continue
-                content_str = str(content) if bytes == str else content.decode()
+                content_str = (str(content) if bytes == str
+                    else content.decode())
                 document = dom.minidom.parseString(content_str)
                 strings += self._translate_jasper_report(document)
             self._store_report_strings(report, strings, 'jasper')

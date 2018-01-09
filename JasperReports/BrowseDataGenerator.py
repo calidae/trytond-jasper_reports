@@ -218,7 +218,7 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
             # In order not to change the way we detect many2one fields, we
             # simply check that the field is in self.report.fields() and that's
             # it.
-            if not currentPath in self.report.fields():
+            if currentPath not in self.report.fields():
                 continue
 
             # Show all translations for a field
