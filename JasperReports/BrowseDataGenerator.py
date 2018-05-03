@@ -128,7 +128,7 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
                 for x in xrange(copies):
                     self.allRecords.append(new)
 
-        f = open(fileName, 'wb+')
+        f = open(fileName, 'w+')
         try:
             csv.QUOTE_ALL = True
             # JasperReports CSV reader requires an extra colon at the end of
@@ -137,7 +137,7 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
                     delimiter=",", quotechar='"')
             header = {}
             for field in self.report.fieldNames() + ['']:
-                if isinstance(field, unicode):
+                if bytes == str and isinstance(field, unicode):
                     name = field.encode('utf-8')
                 else:
                     name = field
@@ -250,7 +250,7 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
                 value = fileName
             elif field_type == 'timedelta':
                 value = value.total_seconds()
-            elif isinstance(value, unicode):
+            elif bytes == str  and isinstance(value, unicode):
                 value = value.encode('utf-8')
             elif isinstance(value, float):
                 value = '%.10f' % value

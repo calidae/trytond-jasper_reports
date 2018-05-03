@@ -79,7 +79,7 @@ class JasperReport(Report):
             else:
                 path = tempfile.mkdtemp(prefix='trytond-jasper-')
 
-        report_content = str(report.report_content)
+        report_content = report.report_content
         report_names = [report.report_name]
 
         # Get subreports in main report
@@ -87,7 +87,7 @@ class JasperReport(Report):
         # <![CDATA[$P{SUBREPORT_DIR} + "report_name.jrxml"]]>
         # </subreportExpression>
         e = re.compile('<subreportExpression>.*</subreportExpression>')
-        subreports = e.findall(report_content)
+        subreports = e.findall(str(report_content))
         if subreports:
             for subreport in subreports:
                 sreport = subreport.split('"')
@@ -111,7 +111,7 @@ class JasperReport(Report):
         fname = os.path.split(report.report)[-1]
         basename = fname.split('.')[0]
         jrxml_path = os.path.join(path, fname)
-        f = open(jrxml_path, 'w')
+        f = open(jrxml_path, 'wb')
         try:
             f.write(report_content)
         finally:
