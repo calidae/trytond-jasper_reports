@@ -8,7 +8,7 @@ import tempfile
 import logging
 import subprocess
 from io import BytesIO
-from urlparse import urlparse
+from urllib.parse import urlparse
 from PyPDF2 import PdfFileMerger, PdfFileReader
 
 from trytond.report import Report, TranslateFactory
@@ -52,12 +52,12 @@ class JasperReport(Report):
             return "".join(["\\u%s" % hex(ord(l))[2:].zfill(4) for l in data])
 
         with open(filename, 'w') as f:
-            for key, value in properties.iteritems():
+            for key, value in properties.items():
                 if not value:
                     value = key
                 key = display_unicode(key)
                 value = display_unicode(value)
-                f.write(u'%s=%s\n' % (key, value))
+                f.write('%s=%s\n' % (key, value))
 
     @classmethod
     def get_report_file(cls, report, path=None):

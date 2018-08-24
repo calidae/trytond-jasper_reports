@@ -6,7 +6,7 @@ import os
 import csv
 import tempfile
 
-from AbstractDataGenerator import AbstractDataGenerator
+from .AbstractDataGenerator import AbstractDataGenerator
 
 from trytond.model import Model
 from trytond.pool import Pool
@@ -42,7 +42,7 @@ class BrowseDataGenerator(AbstractDataGenerator):
             with Transaction().set_context(language=(language or 'en')):
                 values[language] = model.read([id], [field])[0][field] or ''
         result = []
-        for key, value in values.iteritems():
+        for key, value in values.items():
             result.append('%s~%s' % (key, value))
         return '|'.join(result)
 
@@ -125,7 +125,7 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
                     self.report.copiesField()):
                 copies = int(getattr(record, self.report.copiesField()))
             for new in newRecords:
-                for x in xrange(copies):
+                for x in range(copies):
                     self.allRecords.append(new)
 
         f = open(fileName, 'w+')
@@ -137,11 +137,7 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
                     delimiter=",", quotechar='"')
             header = {}
             for field in self.report.fieldNames() + ['']:
-                if bytes == str and isinstance(field, unicode):
-                    name = field.encode('utf-8')
-                else:
-                    name = field
-                header[field] = name
+                header[field] = field
             writer.writerow(header)
             # Once all records have been calculated, create the CSV structure
             # itself
@@ -250,8 +246,6 @@ class CsvBrowseDataGenerator(BrowseDataGenerator):
                 value = fileName
             elif field_type == 'timedelta':
                 value = value.total_seconds()
-            elif bytes == str  and isinstance(value, unicode):
-                value = value.encode('utf-8')
             elif isinstance(value, float):
                 value = '%.10f' % value
             elif not isinstance(value, str):

@@ -87,11 +87,11 @@ class JasperReport:
                 newPath.append(x.split('-')[-1])
             path = '/'.join(newPath)
             if path in fields:
-                print "WARNING: path '%s' already exists in report. This is " \
+                print("WARNING: path '%s' already exists in report. This is " \
                     "not supported by the module. Offending fields: %s, %s" % (
                         path,
                         fields[path]['name'],
-                        name)
+                        name))
             fields[path] = {
                 'name': name,
                 'type': type,
@@ -173,8 +173,8 @@ class JasperReport:
             try:
                 subreportExpression = eval(subreportExpression)
             except:
-                print "COULD NOT EVALUATE EXPRESSION: '%s'" % (
-                    subreportExpression)
+                print("COULD NOT EVALUATE EXPRESSION: '%s'" % (
+                    subreportExpression))
                 # If we're not able to evaluate the expression
                 # go to next subreport
                 continue

@@ -13,26 +13,17 @@ __all__ = ['Model']
 src_chars = """ '"()/*-+?Â¿!&$[]{}@#`'^:;<>=~%,\\"""
 dst_chars = """________________________________"""
 if sys.version_info < (3, 0, 0):
-    src_chars = unicode(src_chars, 'iso-8859-1')
-    dst_chars = unicode(dst_chars, 'iso-8859-1')
+    src_chars = str(src_chars, 'iso-8859-1')
+    dst_chars = str(dst_chars, 'iso-8859-1')
 
 
-class Model:
-    __metaclass__ = PoolMeta
+class Model(metaclass=PoolMeta):
     __name__ = 'ir.model'
 
     @staticmethod
-    def normalize(text):
-        if isinstance(text, unicode):
-            text = text.encode('utf-8')
-        return text
-
-    @staticmethod
     def unaccent(text):
-        if isinstance(text, str):
-            text = unicode(text, 'utf-8')
         output = text
-        for c in xrange(len(src_chars)):
+        for c in range(len(src_chars)):
             if c >= len(dst_chars):
                 break
             output = output.replace(src_chars[c], dst_chars[c])

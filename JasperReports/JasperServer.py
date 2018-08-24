@@ -6,7 +6,7 @@ import glob
 import time
 import socket
 import subprocess
-import xmlrpclib
+import xmlrpc.client
 import logging
 
 from trytond.config import config
@@ -18,7 +18,7 @@ class JasperServer(trytond.error.WarningErrorMixin):
         self.port = port
         self.pidfile = None
         url = 'http://localhost:%d' % port
-        self.proxy = xmlrpclib.ServerProxy(url, allow_none=True)
+        self.proxy = xmlrpc.client.ServerProxy(url, allow_none=True)
 
         self._error_messages = {
                 'jasper-error': 'Jasper Reports Error: %s',
@@ -70,7 +70,7 @@ class JasperServer(trytond.error.WarningErrorMixin):
             'java',
             '-Djava.awt.headless=true',
             'com.nantic.jasperreports.JasperServer',
-            unicode(self.port),
+            str(self.port),
             ]
         process = subprocess.Popen(command, env=env, cwd=cwd, close_fds=True)
         if self.pidfile:
@@ -86,17 +86,17 @@ class JasperServer(trytond.error.WarningErrorMixin):
         """
         try:
             return self.proxy.Report.execute(*args)
-        except (xmlrpclib.ProtocolError, socket.error), e:
+        except (xmlrpc.client.ProtocolError, socket.error) as e:
             self.start()
-            for x in xrange(40):
+            for x in range(40):
                 time.sleep(1)
                 try:
                     return self.proxy.Report.execute(*args)
-                except (xmlrpclib.ProtocolError, socket.error), e:
+                except (xmlrpc.client.ProtocolError, socket.error) as e:
                     self.error("EXCEPTION: %s %s" % (str(e), str(e.args)))
                     pass
-                except xmlrpclib.Fault, e:
+                except xmlrpc.client.Fault as e:
                     self.error("EXCEPTION: %s %s" % (str(e), str(e.args)))
                     raise
-        except xmlrpclib.Fault, e:
+        except xmlrpc.client.Fault as e:
             raise
