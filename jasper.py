@@ -40,6 +40,8 @@ CACHE_FOLDER = config_.get('jasper', 'cache_folder', default=None)
 COMPACT_ON_MERGE = config_.getboolean('jasper', 'compact_on_merge',
     default=False)
 
+REDIRECT_MODEL = config_.get('jasper', 'redirect_model')
+
 logger = logging.getLogger(__name__)
 
 
@@ -162,6 +164,11 @@ class JasperReport(Report):
         if Transaction().context.get('return_pages'):
             return (type, bytearray(data), action_report.direct_print,
                 action_report.name, pages)
+
+        if REDIRECT_MODEL:
+            Printer = pool.get(REDIRECT_MODEL)
+            return Printer.send_report(type, bytearray(data),
+                action_report.name, action_report)
 
         return (type, bytearray(data), action_report.direct_print,
             action_report.name)
