@@ -166,17 +166,21 @@ class JasperReport(Report):
                 action_report.name, pages)
 
         if REDIRECT_MODEL:
-            Printer = pool.get(REDIRECT_MODEL)
-            return Printer.send_report(type, bytearray(data),
-                action_report.name, action_report)
+            Printer = None
+            try:
+                Printer = pool.get(REDIRECT_MODEL)
+            except KeyError:
+                logger.warning('Redirect model "%s" not found.', REDIRECT_MODEL)
+
+            if Printer:
+                return Printer.send_report(type, bytearray(data),
+                    action_report.name, action_report)
 
         return (type, bytearray(data), action_report.direct_print,
             action_report.name)
 
     @classmethod
     def render(cls, action_report, data, model, ids):
-        logger = logging.getLogger('jasper_reports')
-
         output_format = action_report.extension
         if 'output_format' in data:
             output_format = data['output_format']
