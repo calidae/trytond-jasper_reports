@@ -10,10 +10,10 @@ import xmlrpc.client
 import logging
 
 from trytond.config import config
-import trytond.error
+from trytond.exceptions import UserWarning
 
 
-class JasperServer(trytond.error.WarningErrorMixin):
+class JasperServer(UserWarning):
     def __init__(self, port=8090):
         self.port = port
         self.pidfile = None
