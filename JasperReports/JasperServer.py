@@ -19,11 +19,6 @@ class JasperServer(UserWarning):
         self.pidfile = None
         url = 'http://localhost:%d' % port
         self.proxy = xmlrpc.client.ServerProxy(url, allow_none=True)
-
-        self._error_messages = {
-                'jasper-error': 'Jasper Reports Error: %s',
-                }
-
         self.logger = logging.getLogger('jasper_reports')
 
     def error(self, message):
