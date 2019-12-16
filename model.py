@@ -29,7 +29,8 @@ class Model(metaclass=PoolMeta):
             output = output.replace(src_chars[c], dst_chars[c])
         output = unicodedata.normalize('NFKD', output).encode('ASCII',
             'ignore')
-        return output.strip('_').encode('utf-8')
+        return str(output, encoding='utf-8').strip('_')
+
 
     @staticmethod
     def generate_jreport_xml(model, depth=1):
@@ -46,7 +47,7 @@ class Model(metaclass=PoolMeta):
         topNode.appendChild(recordNode)
         IrModel.get_jreport_xml(model, recordNode, document, depth)
         file_data = topNode.toxml()
-        return bytes(file_data)
+        return bytes(file_data, encoding='utf-8')
 
     @staticmethod
     def get_jreport_xml(model, parentNode, document, depth=1, first_call=True):
