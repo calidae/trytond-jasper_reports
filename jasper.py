@@ -11,7 +11,8 @@ from io import BytesIO
 from urllib.parse import urlparse
 from PyPDF2 import PdfFileMerger, PdfFileReader
 
-from trytond.report import Report, TranslateFactory
+from trytond.report import Report
+from trytond.report.report import TranslateFactory
 from trytond.config import config as config_
 from trytond.pool import Pool
 from trytond.transaction import Transaction
