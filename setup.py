@@ -43,7 +43,7 @@ major_version, minor_version, _ = version.split('.', 2)
 major_version = int(major_version)
 minor_version = int(minor_version)
 
-requires = []
+requires = ['PyPDF2', 'lxml']
 
 for dep in info.get('depends', []):
     if not re.match(r'(ir|res)(\W|$)', dep):
@@ -54,7 +54,7 @@ requires += []
 
 tests_require = [
     get_require_version('proteus'),
-    
+
     ]
 
 series = '%s.%s' % (major_version, minor_version)
@@ -79,12 +79,19 @@ setup(name='%s_%s' % (PREFIX, MODULE),
     package_dir={'trytond.modules.%s' % MODULE: '.'},
     packages=[
         'trytond.modules.%s' % MODULE,
+        'trytond.modules.%s.JasperReports' % MODULE,
         'trytond.modules.%s.tests' % MODULE,
         ],
     package_data={
         'trytond.modules.%s' % MODULE: (info.get('xml', [])
-            + ['tryton.cfg', 'locale/*.po', 'tests/*.rst', 'view/*.xml']),
-        },
+            + ['tryton.cfg', 'view/*.xml', 'locale/*.po', '*.odt',
+                'icons/*.svg', 'tests/*.rst',
+                'icons/*.svg', 'tests/*.rst'
+                'java/*', 'java/lib/*', 'java/fonts/*',
+                'java/com/*', 'java/com/nantic/*',
+                'java/com/nantic/jasperreports/*',
+            ]),
+    },
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Plugins',
