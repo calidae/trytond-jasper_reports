@@ -121,13 +121,23 @@ class JasperReport(Report):
         finally:
             f.close()
 
-        translate = TranslateFactory(cls.__name__, '', Translation)
+        # TODO known all keys by report
+        keys = set(t.src for t in Translation.search([
+                    ('name', '=', report.report_name),
+                    ('type', '=', 'report'),
+                    ]))
+
         for lang in Lang.search([('translatable', '=', True)]):
-            translate.set_language(lang.code)
-            translate(text=None)
+            Transaction().set_context(language=lang.code)
+            translate = TranslateFactory(cls.__name__, Translation)
+
+            properties = dict()
+            for key in keys:
+                properties[key] = translate(key)
+
             pfile = os.path.join(path, '%s_%s.properties' % (
                     basename, lang.code.lower()))
-            cls.write_properties(pfile, translate.cache[lang.code])
+            cls.write_properties(pfile, properties)
 
         cls._get_report_file_cache.set(report.id, jrxml_path)
         return jrxml_path
