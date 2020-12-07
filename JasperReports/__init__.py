@@ -2,11 +2,11 @@
 # The COPYRIGHT file at the top level of this repository contains
 # the full copyright notices and license terms.
 
-from .AbstractDataGenerator import AbastractDataGenerator
-from .BrowseDataGenerator import BrowseDataGenerator
-from .RecordDataGenerator import RecordDataGenerator
+from .AbstractDataGenerator import AbstractDataGenerator
+from .BrowseDataGenerator import CsvBrowseDataGenerator
+from .RecordDataGenerator import CsvRecordDataGenerator
 from .JasperReport import JasperReport
 from .JasperServer import JasperServer
 
-__all__ = ['AbastractDataGenerator', 'BrowseDataGenerator',
-    'RecordDataGenerator', 'JasperReport', 'JasperServer']
+__all__ = ['AbstractDataGenerator', 'CsvBrowseDataGenerator',
+    'CsvRecordDataGenerator', 'JasperReport', 'JasperServer']
