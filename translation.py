@@ -22,7 +22,7 @@ class ReportTranslationSet(metaclass=PoolMeta):
                     node.parentNode.tagName.endswith('Expression')):
                 return []
             if node.nodeValue:
-                node_strings = re.findall('tr *\([^\(]*,[ ]*"([^"]*)"\)',
+                node_strings = re.findall(r'tr *\([^\(]*,[ ]*"([^"]*)"\)',
                 node.nodeValue)
                 strings += [x for x in node_strings if x]
 
