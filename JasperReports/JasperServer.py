@@ -80,9 +80,12 @@ class JasperServer(UserWarning):
     def stop():
         if not JasperServer.pid:
             return
-        os.kill(JasperServer.pid, signal.SIGTERM)
-        time.sleep(2)
-        os.kill(JasperServer.pid, signal.SIGKILL)
+        try:
+            os.kill(JasperServer.pid, signal.SIGTERM)
+            time.sleep(2)
+            os.kill(JasperServer.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
 
     def execute(self, *args):
         """
