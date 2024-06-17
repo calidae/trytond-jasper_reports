@@ -28,9 +28,9 @@ def get_require_version(name):
     return require
 
 config = ConfigParser()
-config.readfp(open('tryton.cfg'))
+config.read_file(open('tryton.cfg'))
 info = dict(config.items('tryton'))
-for key in ('depends', 'extras_depend', 'xml'):
+for key in ('xml',):
     if key in info:
         info[key] = info[key].strip().splitlines()
 
@@ -39,14 +39,7 @@ major_version, minor_version, _ = version.split('.', 2)
 major_version = int(major_version)
 minor_version = int(minor_version)
 
-requires = ['PyPDF2', 'lxml']
-
-for dep in info.get('depends', []):
-    if not re.match(r'(ir|res)(\W|$)', dep):
-        prefix = MODULE2PREFIX.get(dep, 'trytond')
-        requires.append(get_require_version('%s_%s' % (prefix, dep)))
-requires.append(get_require_version('trytond'))
-requires += []
+requires = []
 
 tests_require = [
     get_require_version('proteus'),
